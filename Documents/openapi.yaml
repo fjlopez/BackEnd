@@ -1,0 +1,259 @@
+---
+openapi: 3.0.0
+info:
+  title: URL shortener API
+  description: URL shortener
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0-oas3
+servers:
+- url: https://virtserver.swaggerhub.com/jorgeRambla/urlShortener/1.0.0
+- url: http://virtserver.swaggerhub.com/jorgeRambla/urlShortener/1.0.0
+tags:
+- name: main
+  description: main operations
+- name: redirect
+  description: redirect operations
+- name: stats
+  description: stats operations
+paths:
+  /:
+    post:
+      tags:
+      - main
+      summary: Create new shortend URL
+      operationId: postCreateShortenedURL
+      parameters:
+      - name: headURL
+        in: query
+        description: URL to be shortened
+        required: true
+        style: FORM
+        explode: true
+        schema:
+          type: string
+      - name: intersticialURL
+        in: query
+        description: Intersticial URL
+        required: false
+        style: FORM
+        explode: true
+        schema:
+          type: string
+      responses:
+        201:
+          description: Success
+          content:
+            string:
+              schema:
+                type: string
+                example: http://virtserver.swaggerhub.com/api/Pl9Qw9I
+            application/json:
+              schema:
+                type: string
+                example: http://virtserver.swaggerhub.com/api/Pl9Qw9I
+        400:
+          description: bad input parameter
+          content:
+            string:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: not found
+          content:
+            string:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /{sequence}:
+    get:
+      tags:
+      - redirect
+      summary: Get shortened URL, updating stats
+      operationId: getShortenedURL
+      parameters:
+      - name: sequence
+        in: path
+        description: Shortened URL sequence code
+        required: true
+        style: SIMPLE
+        explode: false
+        schema:
+          type: string
+      - name: userAgent
+        in: query
+        description: UserAgent, stats to update
+        required: true
+        style: FORM
+        explode: true
+        schema:
+          type: string
+      responses:
+        201:
+          description: Success
+          content:
+            string:
+              schema:
+                $ref: '#/components/schemas/RedirectURL'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectURL'
+        400:
+          description: bad input parameter
+          content:
+            string:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: not found
+          content:
+            string:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /{sequence}/qr:
+    get:
+      tags:
+      - main
+      summary: Get the QR code of the shortened URL
+      operationId: getQR
+      parameters:
+      - name: sequence
+        in: path
+        description: Shortened URL sequence code
+        required: true
+        style: SIMPLE
+        explode: false
+        schema:
+          type: string
+      responses:
+        201:
+          description: Success
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: string
+                format: binary
+        400:
+          description: bad input parameter
+          content:
+            image/png:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: not found
+          content:
+            image/png:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /{sequence}/stats:
+    get:
+      tags:
+      - stats
+      summary: Get the stats of the shortened URL
+      operationId: getStats
+      parameters:
+      - name: sequence
+        in: path
+        description: Shortened URL sequence code
+        required: true
+        style: SIMPLE
+        explode: false
+        schema:
+          type: string
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stats'
+        400:
+          description: bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    ClickStat:
+      required:
+      - browser
+      - clicks
+      type: object
+      properties:
+        browser:
+          type: string
+          example: Google Chrome
+        clicks:
+          type: string
+          format: int32
+          example: "154"
+    Stats:
+      required:
+      - clickStat
+      - day
+      type: object
+      properties:
+        day:
+          type: string
+          format: date
+        clickStat:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClickStat'
+    RedirectURL:
+      required:
+      - headURL
+      - interstitialURL
+      type: object
+      properties:
+        headURL:
+          type: string
+          example: https://www.google.es
+        interstitialURL:
+          type: string
+          example: https://www.unizar.es
+    Error:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: string
+          format: int32
+          example: "404"
+        message:
+          type: string
+          example: Shortened URL not found
+  extensions: {}
