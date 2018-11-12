@@ -18,9 +18,18 @@
 *.ipr
 /out/
 
+
+### VisualCode
+.settings
+.vs
+.vscode
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+#general
+/bin/
