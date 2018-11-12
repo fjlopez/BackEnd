@@ -2,7 +2,6 @@ package bluebomb.urlshortener.controller;
 
 import bluebomb.urlshortener.errors.NotFoundException;
 import bluebomb.urlshortener.model.Browser;
-import bluebomb.urlshortener.model.QR;
 import bluebomb.urlshortener.model.URL;
 import bluebomb.urlshortener.qr.QRCodeGenerator;
 import org.springframework.http.MediaType;
@@ -17,7 +16,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 public class MainController {
-    @RequestMapping(value = "/short", method = POST)
+    @RequestMapping(value = "/short", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public URL getShortURI(@RequestParam(value = "headURL") String headURL, @RequestParam(value = "interstitialURL", required = false) String interstitialURL) {
         return new URL(headURL);
     }
@@ -30,7 +29,7 @@ public class MainController {
         return QRCodeGenerator.generate(sequence);
     }
 
-    @RequestMapping(value = "/browsers")
+    @RequestMapping(value = "/browsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<Browser> getSupportedBrowsers() {
         ArrayList<Browser> toReturn = new ArrayList<>();
         toReturn.add(new Browser("IE"));
