@@ -18,7 +18,7 @@ tags:
 - name: stats
   description: stats operations
 paths:
-  /:
+  /short:
     post:
       tags:
       - main
@@ -45,33 +45,22 @@ paths:
         201:
           description: Success
           content:
-            string:
-              schema:
-                type: string
-                example: http://virtserver.swaggerhub.com/api/Pl9Qw9I
             application/json:
               schema:
-                type: string
-                example: http://virtserver.swaggerhub.com/api/Pl9Qw9I
+                $ref: '#/components/schemas/URL'
         400:
           description: bad input parameter
           content:
-            string:
-              schema:
-                $ref: '#/components/schemas/Error'
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: not found
           content:
-            string:
-              schema:
-                $ref: '#/components/schemas/Error'
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /{sequence}:
+  /redirect/{sequence}:
     get:
       tags:
       - redirect
@@ -89,7 +78,7 @@ paths:
       - name: userAgent
         in: query
         description: UserAgent, stats to update
-        required: true
+        required: false
         style: FORM
         explode: true
         schema:
@@ -98,31 +87,22 @@ paths:
         201:
           description: Success
           content:
-            string:
-              schema:
-                $ref: '#/components/schemas/RedirectURL'
             application/json:
               schema:
                 $ref: '#/components/schemas/RedirectURL'
         400:
           description: bad input parameter
           content:
-            string:
-              schema:
-                $ref: '#/components/schemas/Error'
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: not found
           content:
-            string:
-              schema:
-                $ref: '#/components/schemas/Error'
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /{sequence}/qr:
+  /qr/{sequence}:
     get:
       tags:
       - main
@@ -145,29 +125,22 @@ paths:
               schema:
                 type: string
                 format: binary
-            application/json:
+            image/svg+xml:
               schema:
                 type: string
-                format: binary
         400:
           description: bad input parameter
           content:
-            image/png:
-              schema:
-                $ref: '#/components/schemas/Error'
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: not found
           content:
-            image/png:
-              schema:
-                $ref: '#/components/schemas/Error'
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /{sequence}/stats:
+  /stats/daily/{sequence}:
     get:
       tags:
       - stats
@@ -203,8 +176,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /stats/global/{sequence}:
+    get:
+      tags:
+      - stats
+      summary: Get the stats of the shortened URL
+      operationId: getGlobalStats
+      parameters:
+      - name: sequence
+        in: path
+        description: Shortened URL sequence code
+        required: true
+        style: SIMPLE
+        explode: false
+        schema:
+          type: string
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClickStat'
+        400:
+          description: bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /browsers:
+    get:
+      tags:
+      - main
+      summary: Get supperted browsers
+      operationId: getSupportedBrowsers
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Browser'
 components:
   schemas:
+    URL:
+      required:
+      - URL
+      type: object
+      properties:
+        URL:
+          type: string
+          example: https://www.google.es
     ClickStat:
       required:
       - browser
@@ -256,4 +288,12 @@ components:
         message:
           type: string
           example: Shortened URL not found
+    Browser:
+      required:
+      - browser
+      type: object
+      properties:
+        browser:
+          type: string
+          example: Opera
   extensions: {}
