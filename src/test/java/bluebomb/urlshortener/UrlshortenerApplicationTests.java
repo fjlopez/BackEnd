@@ -10,8 +10,10 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import bluebomb.urlshortener.controller.*;
-import bluebomb.urlshortener.model.*;
+import bluebomb.urlshortener.controller.MainController;
+import bluebomb.urlshortener.controller.RedirectController;
+import bluebomb.urlshortener.model.RedirectURL;
+import bluebomb.urlshortener.model.URL;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -32,7 +34,9 @@ public class UrlshortenerApplicationTests {
 
     @Test
     public void testShortURL() {
-        //TODO: implement Test
+        Object response = new MainController().getShortURI("http://www.google.es", "https://unizar.es");
+        assertNotNull(response);
+        assertTrue(response instanceof URL);
     }
 
     //REDIRECT CONTROLLER
