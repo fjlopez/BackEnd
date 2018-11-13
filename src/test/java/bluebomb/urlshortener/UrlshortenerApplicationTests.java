@@ -28,7 +28,9 @@ public class UrlshortenerApplicationTests {
 
     @Test
     public void testGetQr() {
-        //TODO: implement Test
+        Object response = new MainController().getQR("BoMb9");
+        assertNotNull(response);
+        assertTrue(response instanceof byte[]);
     }
 
     @Test
