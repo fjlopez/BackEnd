@@ -23,6 +23,7 @@
 .settings
 .vs
 .vscode
+vcs.xml
 
 ### NetBeans ###
 /nbproject/private/
