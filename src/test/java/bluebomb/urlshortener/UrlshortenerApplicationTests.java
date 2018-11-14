@@ -10,8 +10,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import bluebomb.urlshortener.controller.MainController;
-import bluebomb.urlshortener.controller.RedirectController;
+import bluebomb.urlshortener.controller.*;
 import bluebomb.urlshortener.model.RedirectURL;
 import bluebomb.urlshortener.model.URL;
 
@@ -29,9 +28,14 @@ public class UrlshortenerApplicationTests {
 
     @Test
     public void testGetQr() {
-       //TODO: implement Test
-    }
-
+    
+               //TODO: implement Test
+       
+                Object response = new MainController().getQR("BoMb9");
+                assertNotNull(response);
+                assertTrue(response instanceof byte[]);
+      
+            }
     @Test
     public void testShortURL() {
         Object response = new MainController().getShortURI("http://www.google.es", "https://unizar.es");
@@ -50,12 +54,16 @@ public class UrlshortenerApplicationTests {
     //STATS CONTROLLER
     @Test
     public void testDailyStats() {
-        //TODO: implement Test
+        Object response = new StatsController().getStatsDaily("BoMb9", "2018-10-21", "2018-11-13");
+        assertNotNull(response);
+        assertTrue(response instanceof ArrayList);
     }
     
     @Test
     public void testGlobalStats() {
-        //TODO: implement Test
+        Object response = new StatsController().getGlobalStats("BoMb9");
+        assertNotNull(response);
+        assertTrue(response instanceof ArrayList);
     }
 
 }
