@@ -38,3 +38,4 @@ vcs.xml
 DBManager.java
 
 /.metadata/
+.idea
