@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class RedirectController {
-    @RequestMapping(value = "/redirect/{sequence}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{sequence}/redirect", produces = MediaType.APPLICATION_JSON_VALUE)
     public RedirectURL redirect(@PathVariable(value = "sequence") String sequence, @RequestHeader("User-Agent") String userAgent) {
         return new RedirectURL("www.google.es", "www.unizar.es");
     }
