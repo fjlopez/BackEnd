@@ -12,7 +12,7 @@ import java.util.Date;
 
 @RestController
 public class StatsController {
-    @RequestMapping(value = "/stats/daily/{sequence}/{startDate}/{endDate}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{sequence}/stats/daily/{startDate}/{endDate}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<Stats> getStatsDaily(@PathVariable(value = "sequence") String urlSequenceCode, 
                                         @PathVariable(value = "startDate") String startDate, @PathVariable(value = "endDate") String endDate){
         ArrayList<Stats> example = new ArrayList<Stats>();
@@ -24,7 +24,7 @@ public class StatsController {
         return example;
     }
 
-    @RequestMapping(value = "/stats/global/{sequence}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{sequence}/stats/global", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<ClickStat> getGlobalStats(@PathVariable(value = "sequence") String sequence){
         ClickStat clickStat = new ClickStat("IE", 500);
         ArrayList<ClickStat> clickStatArrayList = new ArrayList<>();

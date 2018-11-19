@@ -18,18 +18,18 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class MainController {
     @RequestMapping(value = "/short", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public URL getShortURI(@RequestParam(value = "headURL") String headURL, @RequestParam(value = "interstitialURL", required = false) String interstitialURL) {
-        return new URL(headURL);
+        return new URL("http://localhost/BoMb9");
     }
 
-    @RequestMapping(value = "/qr/{sequence}", produces = MediaType.IMAGE_PNG_VALUE)
+    @RequestMapping(value = "/{sequence}/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public byte[] getQR(@PathVariable(value = "sequence") String sequence) {
         if (sequence.equals("error")) {
             throw new NotFoundException();
         }
-        return QRCodeGenerator.generate(sequence);
+        return QRCodeGenerator.generate("http://localhost/" + sequence);
     }
 
-    @RequestMapping(value = "/browsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{element}/support", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<Browser> getSupportedBrowsers() {
         ArrayList<Browser> toReturn = new ArrayList<>();
         toReturn.add(new Browser("IE"));
