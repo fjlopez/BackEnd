@@ -1,20 +1,20 @@
 package bluebomb.urlshortener.model;
 
 public class ClickStat {
-    private String browser = null;
+    private String agent = null;
     private Integer clicks = null;
 
-    public ClickStat(String browser, Integer clicks) {
-        this.browser = browser;
+    public ClickStat(String agent, Integer clicks) {
+        this.agent = agent;
         this.clicks = clicks;
     }
 
-    public String getBrowser() {
-        return browser;
+    public String getAgent() {
+        return agent;
     }
 
-    public void setBrowser(String browser) {
-        this.browser = browser;
+    public void setAgent(String agent) {
+        this.agent = agent;
     }
 
     public Integer getClicks() {
