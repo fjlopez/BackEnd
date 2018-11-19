@@ -37,17 +37,4 @@ vcs.xml
 
 DBManager.java
 
-
-/.metadata/.plugins/org.eclipse.jdt.ui/OpenTypeHistory.xml
-/.metadata/.plugins/org.eclipse.jdt.ui/QualifiedTypeNameHistory.xml
-/.metadata/.plugins/org.eclipse.jdt.ui/dialog_settings.xml
-/.metadata/.plugins/org.eclipse.jdt.ui/dialog_settings.xml
-/.metadata/.plugins/org.eclipse.jdt.ui/dialog_settings.xml
-/.metadata/.plugins/org.eclipse.m2e.logback.configuration/0.log
-/.metadata/.plugins/org.eclipse.m2e.logback.configuration/logback.1.8.2.20171007-0217.xml
-/.metadata/.plugins/org.eclipse.oomph.setup/workspace.setup
-/.metadata/.plugins/org.eclipse.ui.ide/dialog_settings.xml
-/.metadata/.plugins/org.eclipse.ui.intro/introstate
-/.metadata/.plugins/org.eclipse.ui.workbench/dialog_settings.xml
-/.metadata/.plugins/org.eclipse.ui.workbench/workingsets.xml
-/.metadata/version.ini
+/.metadata/
