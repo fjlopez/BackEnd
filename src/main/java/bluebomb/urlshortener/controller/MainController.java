@@ -28,12 +28,4 @@ public class MainController {
         }
         return QRCodeGenerator.generate("http://localhost/" + sequence);
     }
-
-    @RequestMapping(value = "/{element}/support", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrayList<Browser> getSupportedBrowsers() {
-        ArrayList<Browser> toReturn = new ArrayList<>();
-        toReturn.add(new Browser("IE"));
-        toReturn.add(new Browser("EDGE"));
-        return toReturn;
-    }
 }
