@@ -35,6 +35,8 @@ vcs.xml
 #general
 /bin/
 
+DBManager.java
+
 
 /.metadata/.plugins/org.eclipse.jdt.ui/OpenTypeHistory.xml
 /.metadata/.plugins/org.eclipse.jdt.ui/QualifiedTypeNameHistory.xml
