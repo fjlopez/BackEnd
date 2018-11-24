@@ -13,4 +13,10 @@ public class RedirectController {
     public RedirectURL redirect(@PathVariable(value = "sequence") String sequence, @RequestHeader("User-Agent") String userAgent) {
         return new RedirectURL("www.google.es", "www.unizar.es");
     }
+
+    @RequestMapping(value = "{sequence}/ads", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String ads(@PathVariable(value = "sequence") String sequence) {
+        //TODO emplementar la funcion de busqueda sequence->ads
+        return "www.unizar.es" ;
+    }
 }
