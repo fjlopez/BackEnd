@@ -1,5 +1,6 @@
 package bluebomb.urlshortener;
 
+
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Type;
@@ -9,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import bluebomb.urlshortener.model.Browser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +31,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -63,17 +66,18 @@ public class WebSocketsTest {
 
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe("/topic/greetings", new StompFrameHandler() {
+                System.out.println("afterconected executed");
+                session.subscribe("/app/greetings", new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
-                        return String.class;
+                        return Browser.class;
                     }
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
-                        String greeting = (String) payload;
+                        Browser greeting = (Browser) payload;
                         try {
-                            assertEquals("Prueba Websocket", greeting);
+                            assertEquals("Hello, Spring!", greeting.getBrowser());
                         } catch (Throwable t) {
                             failure.set(t);
                         } finally {
@@ -83,7 +87,7 @@ public class WebSocketsTest {
                     }
                 });
                 try {
-                    session.send("/app/hello", "Prueba Websocket");
+                    session.send("/app/hello", "Spring");
                 } catch (Throwable t) {
                     failure.set(t);
                     latch.countDown();
