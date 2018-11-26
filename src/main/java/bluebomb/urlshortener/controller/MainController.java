@@ -21,23 +21,20 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RestController
 public class MainController {
     @RequestMapping(value = "/short", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ShortResponse getShortURI(@RequestParam(value = "headURL") String headURL, @RequestParam(value = "interstitialURL", required = false) String interstitialURL,@RequestParam(value = "secondsToRedirect", required = false) Integer secondsToRedirect) {
-        
-         ArrayList<ShortRequest> example = new ArrayList<ShortRequest>();
-         interstitialURL=interstitialURL.replace(null,"");
-        
-         ShortRequest shortRequest = new ShortRequest(headURL,interstitialURL,secondsToRedirect);
-         example.add(shortRequest);
+    public ShortResponse getShortURI(@RequestParam(value = "headURL") String headURL, @RequestParam(value = "interstitialURL", required = false) String interstitialURL, @RequestParam(value = "secondsToRedirect", required = false) Integer secondsToRedirect) {
 
-        
-         // TODO: Implement function
-         ShortResponse shortResponse= new ShortResponse("a1b2c3", "...", "...", "...", "...");
-         return shortResponse;       
-       
-       
+        ArrayList<ShortRequest> example = new ArrayList<ShortRequest>();
+        interstitialURL = interstitialURL.replace(null, "");
+
+        ShortRequest shortRequest = new ShortRequest(headURL, interstitialURL, secondsToRedirect);
+        example.add(shortRequest);
+
+
+        // TODO: Implement function
+        ShortResponse shortResponse = new ShortResponse("a1b2c3", "...", "...", "...", "...");
+        return shortResponse;
     }
-    
-   
+
     @RequestMapping(value = "/{sequence}/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public byte[] getQR(@PathVariable(value = "sequence") String sequence,
                         @RequestParam(value = "size", required = false) Size size,
@@ -46,13 +43,11 @@ public class MainController {
                         @RequestParam(value = "qrColor", required = false) String qrColor,
                         @RequestParam(value = "backgroundColor", required = false) String backgroundColor,
                         @RequestParam(value = "logo", required = false) String logo) {
-                           
+
         if (sequence.equals("error")) {
             throw new NotFoundException();
         }
 
         return QRCodeGenerator.generate("http://localhost/" + sequence);
-
-
     }
 }

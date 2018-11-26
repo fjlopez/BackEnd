@@ -10,6 +10,6 @@ public class RedirectController {
     @RequestMapping(value = "{sequence}/ads", produces = MediaType.TEXT_HTML_VALUE)
     public String ads(@PathVariable(value = "sequence") String sequence) {
         //TODO emplementar la funcion de busqueda sequence->ads
-        return "<html><body> <P align=\"center\">hola! </P> </body> </html>" ;
+        return "<html><body> <P align=\"center\">hola! </P> </body> </html>";
     }
 }
