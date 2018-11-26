@@ -14,9 +14,9 @@ public class RedirectController {
         return new RedirectURL("www.google.es", "www.unizar.es");
     }
 
-    @RequestMapping(value = "{sequence}/ads", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{sequence}/ads", produces = MediaType.TEXT_HTML_VALUE)
     public String ads(@PathVariable(value = "sequence") String sequence) {
         //TODO emplementar la funcion de busqueda sequence->ads
-        return "www.unizar.es" ;
+        return "<html><body> <P align=\"center\">hola! </P> </body> </html>" ;
     }
 }
