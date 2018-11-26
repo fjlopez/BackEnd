@@ -1,20 +1,20 @@
 package bluebomb.urlshortener.model;
 
 public class RedirectURL {
-    private String headURL = null;
+    private Integer secondsToRedirect = null;
     private String interstitialURL = null;
 
-    public RedirectURL(String headURL, String interstitialURL) {
-        this.headURL = headURL;
+    public RedirectURL(Integer secondsToRedirect, String interstitialURL) {
+        this.secondsToRedirect = secondsToRedirect;
         this.interstitialURL = interstitialURL;
     }
 
-    public String getHeadURL() {
-        return headURL;
+    public Integer getSecondsToRedirect() {
+        return secondsToRedirect;
     }
 
-    public void setHeadURL(String headURL) {
-        this.headURL = headURL;
+    public void setSecondsToRedirect(Integer secondsToRedirect) {
+        this.secondsToRedirect = secondsToRedirect;
     }
 
     public String getInterstitialURL() {
