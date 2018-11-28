@@ -39,7 +39,7 @@ public class DatabaseApi {
      * @throws DatabaseInternalException
      */
     public byte[] getQrIfExist(String sequence, Size size, String errorCorrection, Integer margin,
-                               String qrColor, String backgroundColor, String logo, String responseFormat) throws DatabaseInternalException {
+                               int qrColor, int backgroundColor, String logo, String responseFormat) throws DatabaseInternalException {
         return null;
     }
 
@@ -58,7 +58,7 @@ public class DatabaseApi {
      * @throws DatabaseInternalException
      */
     public void saveQrInCache(String sequence, Size size, String errorCorrection, Integer margin,
-                              String qrColor, String backgroundColor, String logo, String responseFormat, byte[] qrByteArray) throws DatabaseInternalException {
+                              int qrColor, int backgroundColor, String logo, String responseFormat, byte[] qrByteArray) throws DatabaseInternalException {
 
     }
 }

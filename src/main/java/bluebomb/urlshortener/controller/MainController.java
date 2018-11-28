@@ -2,6 +2,7 @@ package bluebomb.urlshortener.controller;
 
 import bluebomb.urlshortener.config.CommonValues;
 import bluebomb.urlshortener.database.DatabaseApi;
+import bluebomb.urlshortener.errors.NotFoundError;
 import bluebomb.urlshortener.errors.SequenceNotFoundError;
 import bluebomb.urlshortener.errors.ServerInternalError;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
@@ -13,14 +14,19 @@ import bluebomb.urlshortener.model.Size;
 
 import bluebomb.urlshortener.qr.QRCodeGenerator;
 import bluebomb.urlshortener.services.AvailableURI;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 
+import static java.lang.Math.toIntExact;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -40,16 +46,16 @@ public class MainController {
         return shortResponse;
     }
 
+    // TODO: Fix error, when response is an error, Spring return Could not find acceptable representation, because response is different format than Accept
     @RequestMapping(value = "/{sequence}/qr", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     public byte[] getQr(@PathVariable(value = "sequence") String sequence,
                         @RequestParam(value = "size", required = false) Size size,
                         @RequestParam(value = "errorCorrection", required = false, defaultValue = "L") String errorCorrection,
                         @RequestParam(value = "margin", required = false, defaultValue = "20") Integer margin,
-                        @RequestParam(value = "qrColor", required = false, defaultValue = "#000000") String qrColor,
-                        @RequestParam(value = "backgroundColor", required = false, defaultValue = "#ffffff") String backgroundColor,
+                        @RequestParam(value = "qrColor", required = false, defaultValue = "0xFF000000") String qrColorIm,
+                        @RequestParam(value = "backgroundColor", required = false, defaultValue = "0xFFFFFFFF") String backgroundColorIm,
                         @RequestParam(value = "logo", required = false) String logo,
-                        @RequestHeader("Accept") String acceptHeader) {
-
+                        @RequestHeader("Accept") String acceptHeader) throws NotFoundError {
         // Response
         byte[] response = null;
 
@@ -60,6 +66,18 @@ public class MainController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
         } else if (!AvailableURI.getInstance().isSequenceAdsAvailable(sequence)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated ad is not available");
+        }
+
+        int qrColor;
+        int backgroundColor;
+
+        // Check colors
+        String goodFormColorsRegExp = "0x[a-f0-9A-F]{8}";
+        if (!qrColorIm.matches(goodFormColorsRegExp) || !backgroundColorIm.matches(goodFormColorsRegExp)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "qrColor and backgroundColor must be a hexadecimal aRGB value");
+        } else {
+            qrColor = parseHexadecimalToInt(qrColorIm);
+            backgroundColor = parseHexadecimalToInt(backgroundColorIm);
         }
 
         // Get QR if is in cache
@@ -75,7 +93,7 @@ public class MainController {
         }
 
         // Check logo
-        if (!logo.isEmpty() && AvailableURI.getInstance().isURLAvailable(logo)) {
+        if (logo != null && !logo.isEmpty() && !AvailableURI.getInstance().isURLAvailable(logo)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Logo resource is not available");
         }
 
@@ -85,8 +103,16 @@ public class MainController {
         }
 
         // Download logo
-        // TODO: Download logo and save it in bufferedLogo
         BufferedImage bufferedLogo = null;
+
+        if (logo != null && !logo.isEmpty()) {
+            try {
+                URL url = new URL(logo);
+                bufferedLogo = ImageIO.read(url);
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Logo resource is not available");
+            }
+        }
 
         // Response type
         QRCodeGenerator.ResponseType responseType;
@@ -103,19 +129,19 @@ public class MainController {
         }
 
         // Error correction
-        QRCodeGenerator.ErrorCorrectionLevel errorCorrectionLevel;
+        ErrorCorrectionLevel errorCorrectionLevel;
         switch (errorCorrection) {
             case "L":
-                errorCorrectionLevel = QRCodeGenerator.ErrorCorrectionLevel.L;
+                errorCorrectionLevel = ErrorCorrectionLevel.L;
                 break;
             case "M":
-                errorCorrectionLevel = QRCodeGenerator.ErrorCorrectionLevel.M;
+                errorCorrectionLevel = ErrorCorrectionLevel.M;
                 break;
             case "Q":
-                errorCorrectionLevel = QRCodeGenerator.ErrorCorrectionLevel.Q;
+                errorCorrectionLevel = ErrorCorrectionLevel.Q;
                 break;
             case "H":
-                errorCorrectionLevel = QRCodeGenerator.ErrorCorrectionLevel.H;
+                errorCorrectionLevel = ErrorCorrectionLevel.H;
                 break;
             default:
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error in error correction level");
@@ -137,5 +163,18 @@ public class MainController {
         }
 
         return response;
+    }
+
+    /**
+     * Parse hexadecimal to int
+     *
+     * @param hex
+     * @return
+     */
+    private int parseHexadecimalToInt(String hex) {
+        // TODO:
+        if(hex.equals("0xFFFFFFFF")) return 0xFFFFFFFF;
+        else return 0xFF000000;
+
     }
 }

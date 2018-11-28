@@ -1,17 +1,25 @@
 package bluebomb.urlshortener.qr;
 
-import bluebomb.urlshortener.errors.ServerInternalError;
 import bluebomb.urlshortener.exceptions.QrGeneratorBadParametersException;
 import bluebomb.urlshortener.exceptions.QrGeneratorInternalException;
 import bluebomb.urlshortener.model.Size;
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageConfig;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import org.springframework.lang.NonNull;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class QRCodeGenerator {
 
@@ -19,39 +27,101 @@ public class QRCodeGenerator {
      * Available response types
      */
     public enum ResponseType {
-        TYPE_PNG,
-        TYPE_JPEG
-    }
+        TYPE_PNG("PNG"),
+        TYPE_JPEG("JPEG");
 
-    /**
-     * Available error correction levels
-     */
-    public enum ErrorCorrectionLevel {
-        L, // 7% correction
-        M, // 15% correction
-        Q, // 25% correction
-        H // 30% correction
+        private final String type;
+
+        ResponseType(final String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
     }
 
     /**
      * Generate QR code
      *
-     * @param url Shorten url to transform into QR code
-     * @return QR code
+     * @param url                  Url to be inserted as content
+     * @param format               Generated image format
+     * @param size                 Generated image size
+     * @param errorCorrectionLevel Generated image correction level
+     * @param margin               Generated image correction margins
+     * @param qrColor              Generated image QR color
+     * @param backgroundColor      Generated image background color
+     * @param logo                 Generated image optional embedded logo
+     * @return Generated QR code
+     * @throws QrGeneratorBadParametersException Caused by parameters error
+     * @throws QrGeneratorInternalException      Caused by internal function error
      */
     public static byte[] generate(@NonNull String url, @NonNull ResponseType format, @NonNull Size size, @NonNull ErrorCorrectionLevel errorCorrectionLevel,
-                                  @NonNull Integer margin, @NonNull String qrColor,@NonNull String backgroundColor, BufferedImage logo)
+                                  @NonNull Integer margin, @NonNull int qrColor, @NonNull int backgroundColor, BufferedImage logo)
             throws QrGeneratorBadParametersException, QrGeneratorInternalException {
-        // TODO:
+
+        // Check size
+        if (size.getHeight() <= 0 || size.getWidth() <= 0) {
+            throw new QrGeneratorBadParametersException("Height and width of the QR must be greater than 0");
+        }
+
+        // Check margin
+        if (margin < 0) {
+            throw new QrGeneratorBadParametersException("Margin must be a natural number");
+        }
+
+        // Add options
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.ERROR_CORRECTION, errorCorrectionLevel);
+        hints.put(EncodeHintType.MARGIN, margin);
+
+        // Generate QR Matrix
+        BufferedImage qrImage;
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, 500, 500);
+            BitMatrix bitMatrix;
+            bitMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, size.getWidth(), size.getHeight(), hints);
+            qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix,
+                    new MatrixToImageConfig(qrColor, backgroundColor));
 
-            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-            return pngOutputStream.toByteArray();
-        } catch (Exception e) {
-            throw new ServerInternalError();
+        } catch (WriterException e) {
+            throw new QrGeneratorInternalException("Qr encoding fails");
         }
+
+        // Combine QR Matrix and logo
+        if (logo != null) {
+            // Logo must be rescaled
+            Integer logoFinalHeight = (size.getHeight() - margin) / 8;
+            Integer logoFinalWidth = (size.getWidth() - margin) / 8;
+
+            Image tmpLogo = logo.getScaledInstance(logoFinalWidth, logoFinalHeight, Image.SCALE_SMOOTH);
+            BufferedImage rescaledLogo = new BufferedImage(logoFinalWidth, logoFinalHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2dRescaledLogo = rescaledLogo.createGraphics();
+            g2dRescaledLogo.drawImage(tmpLogo, 0, 0, null);
+            g2dRescaledLogo.dispose();
+
+            // Combine images
+            BufferedImage combinedImage = new BufferedImage(qrImage.getHeight(), qrImage.getWidth(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2gCombinedImage = (Graphics2D) combinedImage.getGraphics();
+
+            g2gCombinedImage.drawImage(qrImage, 0, 0, null);
+            g2gCombinedImage.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
+            // Write logo centred
+            g2gCombinedImage.drawImage(rescaledLogo, (int) Math.round((size.getWidth() - margin) / 3.5), (int) Math.round((size.getHeight() - margin) / 3.5), null);
+
+            // qrImage now will point to the combined image
+            qrImage = combinedImage;
+        }
+
+        // Write to byte stream
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(qrImage, format.getType(), pngOutputStream);
+        } catch (IOException e) {
+            throw new QrGeneratorInternalException("Qr write to image fails");
+        }
+
+        return pngOutputStream.toByteArray();
     }
 }

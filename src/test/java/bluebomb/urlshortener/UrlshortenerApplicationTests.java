@@ -21,7 +21,7 @@ import bluebomb.urlshortener.model.URL;
 public class UrlshortenerApplicationTests {
 
     // MAIN CONTROLLER
-    @Test
+   /* @Test
     @Ignore
     public void testGetBrowsers() {
         Object response = new StatsController().getSupportedAgents("browser");
@@ -72,6 +72,6 @@ public class UrlshortenerApplicationTests {
         Object response = new StatsController().getGlobalStats("BoMb9");
         assertNotNull(response);
         assertTrue(response instanceof ArrayList);
-    }
+    }*/
 
 }
