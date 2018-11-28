@@ -36,4 +36,14 @@ public class QRCodeGeneratorTest {
         }
 
     }
+
+    @Test
+    public void pruebaHex(){
+        int r = parseHexadecimalToInt("0xFF000000");
+        int i = 0xFF000000;
+    }
+
+    private int parseHexadecimalToInt(String hex) {
+        return (int) Long.parseLong(hex.substring(2),16);
+    }
 }

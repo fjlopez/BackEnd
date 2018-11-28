@@ -91,8 +91,8 @@ public class QRCodeGenerator {
         // Combine QR Matrix and logo
         if (logo != null) {
             // Logo must be rescaled
-            Integer logoFinalHeight = (size.getHeight() - margin) / 8;
-            Integer logoFinalWidth = (size.getWidth() - margin) / 8;
+            int logoFinalHeight = (size.getHeight() - margin) / 8;
+            int logoFinalWidth = (size.getWidth() - margin) / 8;
 
             Image tmpLogo = logo.getScaledInstance(logoFinalWidth, logoFinalHeight, Image.SCALE_SMOOTH);
             BufferedImage rescaledLogo = new BufferedImage(logoFinalWidth, logoFinalHeight, BufferedImage.TYPE_INT_ARGB);
@@ -108,7 +108,7 @@ public class QRCodeGenerator {
             g2gCombinedImage.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
             // Write logo centred
-            g2gCombinedImage.drawImage(rescaledLogo, (int) Math.round((size.getWidth() - margin) / 3.5), (int) Math.round((size.getHeight() - margin) / 3.5), null);
+            g2gCombinedImage.drawImage(rescaledLogo, margin + (size.getWidth() - logoFinalWidth) / 2, margin + (size.getHeight() - logoFinalHeight) / 2, null);
 
             // qrImage now will point to the combined image
             qrImage = combinedImage;

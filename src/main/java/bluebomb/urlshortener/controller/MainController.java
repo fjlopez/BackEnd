@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import static java.lang.Math.toIntExact;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -46,8 +45,20 @@ public class MainController {
         return shortResponse;
     }
 
-    // TODO: Fix error, when response is an error, Spring return Could not find acceptable representation, because response is different format than Accept
-    @RequestMapping(value = "/{sequence}/qr", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    /**
+     * Generates Qr for especific URL
+     *
+     * @param sequence Shortened URL sequence code
+     * @param size Size of returned QR
+     * @param errorCorrection Error correction level (L = ~7% correction, M = ~15% correction, Q = ~25% correction, H = ~30% correction)
+     * @param margin Horizontal and vertical margin of the QR in pixels
+     * @param qrColorIm Color of the QR in hexadecimal
+     * @param backgroundColorIm Color of the background in hexadecimal
+     * @param logo URL of the logo to personalize QR
+     * @param acceptHeader Accepted return types
+     * @return Qr image
+     */
+    @RequestMapping(value = "/{sequence}/qr", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public byte[] getQr(@PathVariable(value = "sequence") String sequence,
                         @RequestParam(value = "size", required = false) Size size,
                         @RequestParam(value = "errorCorrection", required = false, defaultValue = "L") String errorCorrection,
@@ -55,7 +66,7 @@ public class MainController {
                         @RequestParam(value = "qrColor", required = false, defaultValue = "0xFF000000") String qrColorIm,
                         @RequestParam(value = "backgroundColor", required = false, defaultValue = "0xFFFFFFFF") String backgroundColorIm,
                         @RequestParam(value = "logo", required = false) String logo,
-                        @RequestHeader("Accept") String acceptHeader) throws NotFoundError {
+                        @RequestHeader("Accept") String acceptHeader) {
         // Response
         byte[] response = null;
 
@@ -116,16 +127,12 @@ public class MainController {
 
         // Response type
         QRCodeGenerator.ResponseType responseType;
-        switch (acceptHeader) {
-            case MediaType.IMAGE_PNG_VALUE:
-                responseType = QRCodeGenerator.ResponseType.TYPE_PNG;
-                break;
-            case MediaType.IMAGE_JPEG_VALUE:
-                responseType = QRCodeGenerator.ResponseType.TYPE_JPEG;
-                break;
-            default:
-                // Spring not filtering Accept
-                throw new ServerInternalError();
+        if (acceptHeader.contains(MediaType.IMAGE_PNG_VALUE)) {
+            responseType = QRCodeGenerator.ResponseType.TYPE_PNG;
+        } else if (acceptHeader.contains(MediaType.IMAGE_JPEG_VALUE)) {
+            responseType = QRCodeGenerator.ResponseType.TYPE_JPEG;
+        } else {
+            responseType = QRCodeGenerator.ResponseType.TYPE_PNG;
         }
 
         // Error correction
@@ -168,13 +175,10 @@ public class MainController {
     /**
      * Parse hexadecimal to int
      *
-     * @param hex
-     * @return
+     * @param hex Number in form 0xFFFFFFFF
+     * @return Parsed number
      */
     private int parseHexadecimalToInt(String hex) {
-        // TODO:
-        if(hex.equals("0xFFFFFFFF")) return 0xFFFFFFFF;
-        else return 0xFF000000;
-
+        return (int) Long.parseLong(hex.substring(2),16);
     }
 }
