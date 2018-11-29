@@ -1,28 +1,28 @@
 package bluebomb.urlshortener.model;
 
-public class Size{
-    private Double height;
-    private Double width;
+public class Size {
+    private int height;
+    private int width;
 
-    public Size(Double height, double width){
-        this.height=height;
-        this.width=width;
+    public Size(int height, int width) {
+        this.height = height;
+        this.width = width;
     }
 
-    public Double getHeight(){
+    public int getHeight() {
         return height;
     }
 
-    public Double getWidth(){
+    public int getWidth() {
         return width;
     }
 
-    public void setHeight(Double height){
-       this.height=height; 
+    public void setHeight(int height) {
+        this.height = height;
     }
-    
-    public void setWidth(Double width){
-        this.width=width; 
-     }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
 
 }
