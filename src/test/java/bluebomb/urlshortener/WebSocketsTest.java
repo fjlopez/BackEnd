@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import bluebomb.urlshortener.model.Browser;
+import bluebomb.urlshortener.model.ClickStat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,18 +67,19 @@ public class WebSocketsTest {
 
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                System.out.println("afterconected executed");
-                session.subscribe("/app/greetings", new StompFrameHandler() {
+                session.subscribe("/ws/greetings/stats/os/global", new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
-                        return Browser.class;
+                        return ArrayList.class;
                     }
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
-                        Browser greeting = (Browser) payload;
+                        System.out.println("Frame ha llegado");
+                        ArrayList<ClickStat> greeting = (ArrayList<ClickStat>) payload;
                         try {
-                            assertEquals("Hello, Spring!", greeting.getBrowser());
+                            System.out.println("passed");
+                            assertEquals(0, greeting.size());
                         } catch (Throwable t) {
                             failure.set(t);
                         } finally {
@@ -87,22 +89,27 @@ public class WebSocketsTest {
                     }
                 });
                 try {
-                    session.send("/app/hello", "Spring");
+                    session.send("/ws/hello", "Spring");
                 } catch (Throwable t) {
                     failure.set(t);
                     latch.countDown();
                 }
             }
+
+            @Override
+            public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
+                super.handleException(s, c, h, p, ex);
+                System.out.println("Excepcion ha llegado");
+            }
         };
 
-        this.stompClient.connect("ws://localhost:{port}/gs-guide-websocket", this.headers, handler, this.port);
+        this.stompClient.connect("ws://localhost:{port}/ws", this.headers, handler, this.port);
 
         if (latch.await(3, TimeUnit.SECONDS)) {
             if (failure.get() != null) {
                 throw new AssertionError("", failure.get());
             }
-        }
-        else {
+        } else {
             fail("Greeting not received");
         }
 
