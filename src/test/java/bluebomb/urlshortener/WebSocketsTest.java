@@ -67,7 +67,7 @@ public class WebSocketsTest {
 
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe("/ws/greetings/stats/os/global", new StompFrameHandler() {
+                session.subscribe("/ws/greetings/stats/ose/global", new StompSessionHandlerAdapter() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
                         return ArrayList.class;
@@ -96,10 +96,12 @@ public class WebSocketsTest {
                 }
             }
 
+
+
             @Override
             public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
-                super.handleException(s, c, h, p, ex);
                 System.out.println("Excepcion ha llegado");
+                super.handleException(s, c, h, p, ex);
             }
         };
 
@@ -126,16 +128,19 @@ public class WebSocketsTest {
 
         @Override
         public void handleFrame(StompHeaders headers, Object payload) {
+            System.out.println("handleFrame");
             this.failure.set(new Exception(headers.toString()));
         }
 
         @Override
         public void handleException(StompSession s, StompCommand c, StompHeaders h, byte[] p, Throwable ex) {
+            System.out.println("handleException");
             this.failure.set(ex);
         }
 
         @Override
         public void handleTransportError(StompSession session, Throwable ex) {
+            System.out.println("handleTransportError");
             this.failure.set(ex);
         }
     }
