@@ -32,15 +32,6 @@ public class StatsController {
         return example;
     }
 
-    // TODO: IMPLEMENT WITH WEBSOCKETS
-    @RequestMapping(value = "/{sequence}/stats/global", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrayList<ClickStat> getGlobalStats(@PathVariable(value = "sequence") String sequence) {
-        ClickStat clickStat = new ClickStat("IE", 500);
-        ArrayList<ClickStat> clickStatArrayList = new ArrayList<>();
-        clickStatArrayList.add(clickStat);
-        return clickStatArrayList;
-    }
-
     @RequestMapping(value = "/{element}/support", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<StatsAgent> getSupportedAgents(@PathVariable(value = "element") String element) {
         StatsAgent clickStat = new StatsAgent("IE");
