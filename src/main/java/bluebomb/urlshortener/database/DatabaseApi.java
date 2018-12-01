@@ -61,4 +61,22 @@ public class DatabaseApi {
                               int qrColor, int backgroundColor, String logo, String responseFormat, byte[] qrByteArray) throws DatabaseInternalException {
 
     }
+
+    /**
+     * Return ADS code if exist in cache or null
+     *
+     * @param sequence
+    */
+    public String getADSIfExist(String sequence) throws DatabaseInternalException {
+    
+        return null;
+    }
+    /**
+     * save ADS code in cache 
+     * 
+     * @param sequence
+    */
+    public void saveADSInCache(String sequence,String ads) throws DatabaseInternalException {
+
+    }
 }
