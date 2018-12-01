@@ -34,7 +34,7 @@ public class RedirectController {
         } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
         } else if (!AvailableURI.getInstance().isSequenceAdsAvailable(sequence)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated ad is not available");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated ads is not available");
         }
 
          // Get ADS if is in cache
@@ -44,18 +44,6 @@ public class RedirectController {
             // Database not working
         }
 
-        if (response != null) {
-            // ADS have been cached
-            return response;
-        }
-
-
-
-
-
-
-
-
-        return "<html><body> <P align=\"center\">hola! </P> </body> </html>";
+        return response;
     }
 }

@@ -1,6 +1,11 @@
 package bluebomb.urlshortener.database;
 
+
+import java.util.ArrayList;
+import java.util.Date;
+
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
+import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.Size;
 
 public class DatabaseApi {
@@ -78,5 +83,33 @@ public class DatabaseApi {
     */
     public void saveADSInCache(String sequence,String ads) throws DatabaseInternalException {
 
+    }
+        /**
+     * Return stats code if exist in cache or null
+     * @param sequence
+     * @param parameter parameters from which statistics will be obtained
+     * @param startDate First day to get stats
+     * @param endDate Last day to get stats
+     * @param sortType Sort type (based on total clicks)
+     * @param maxAmountofDataToRetrive 
+    */
+    public ClickStat getSTATSifExist(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive) 
+                                                                                                                                throws DatabaseInternalException {
+        
+        return null;
+    }
+    /**
+     * save stats code in cache 
+     * 
+     * @param sequence
+     * @param parameter parameters from which statistics will be obtained
+     * @param startDate First day to get stats
+     * @param endDate Last day to get stats
+     * @param sortType Sort type (based on total clicks)
+     * @param maxAmountofDataToRetrive 
+     */
+    public void saveSTATSinCache(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive)
+                                                                                                                                 throws DatabaseInternalException {
+        
     }
 }
