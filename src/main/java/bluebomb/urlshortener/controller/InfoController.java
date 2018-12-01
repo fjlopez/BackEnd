@@ -26,10 +26,10 @@ public class InfoController {
     /**
      * Send original url to subscriber
      *
-     * @param sequence
-     * @param originalURL
-     * @param username
-     * @param simpMessagingTemplate
+     * @param sequence sequence that user request for
+     * @param originalURL original url associated with sequence
+     * @param username session if of the user that should receive the original url
+     * @param simpMessagingTemplate a SimpMessagingTemplate instance to perform the call
      */
     public static void sendOriginalUrlToSubscriber(String sequence, URL originalURL, String username,
                                                    SimpMessagingTemplate simpMessagingTemplate) {
@@ -39,10 +39,10 @@ public class InfoController {
     /**
      * Redirection function to get original URL and statics
      *
-     * @param sequence
-     * @param simpSessionId
-     * @param userAgent
-     * @return
+     * @param sequence shortened URL sequence code
+     * @param simpSessionId session id
+     * @param userAgent user agent
+     * @return original URL if no ad and add URL and the time to wait in the other case
      */
     @SubscribeMapping("/{sequence}/info")
     public Object getShortenedURL(@DestinationVariable String sequence, @Header("simpSessionId") String simpSessionId,
