@@ -2,7 +2,6 @@ package bluebomb.urlshortener.controller;
 
 import bluebomb.urlshortener.config.CommonValues;
 import bluebomb.urlshortener.database.DatabaseApi;
-import bluebomb.urlshortener.errors.NotFoundError;
 import bluebomb.urlshortener.errors.SequenceNotFoundError;
 import bluebomb.urlshortener.errors.ServerInternalError;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
