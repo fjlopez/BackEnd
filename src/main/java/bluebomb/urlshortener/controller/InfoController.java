@@ -59,8 +59,8 @@ public class InfoController {
         }
 
         // Update statics
-        String browser = UserAgentDetection.getInstance().detectBrowser(userAgent);
-        String os = UserAgentDetection.getInstance().detectOS(userAgent);
+        String browser = UserAgentDetection.detectBrowser(userAgent);
+        String os = UserAgentDetection.detectOS(userAgent);
         ImmutablePair<Integer, Integer> newStatics = DatabaseApi.getInstance().updateSequenceStatics(sequence, os, browser);
 
         // Notify new statics to all subscribers

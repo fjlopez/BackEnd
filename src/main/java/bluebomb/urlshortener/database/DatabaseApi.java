@@ -25,7 +25,7 @@ public class DatabaseApi {
      * @param sequence
      * @return
      */
-    public boolean checkIfSequenceExist(String sequence) {
+    public boolean checkIfSequenceExist(String sequence) throws DatabaseInternalException {
         // TODO:
         return true;
     }
@@ -76,7 +76,7 @@ public class DatabaseApi {
      * @param parameter
      * @return
      */
-    public ArrayList<ClickStat> getSequenceGlobalStats(String sequence, String parameter) {
+    public ArrayList<ClickStat> getSequenceGlobalStats(String sequence, String parameter) throws DatabaseInternalException {
         // TODO:
         return new ArrayList<>();
     }
@@ -89,7 +89,7 @@ public class DatabaseApi {
      * @param browser
      * @return (New OS number of clicks, New Browser number of clicks)
      */
-    public ImmutablePair<Integer, Integer> updateSequenceStatics(String sequence, String os, String browser) {
+    public ImmutablePair<Integer, Integer> updateSequenceStatics(String sequence, String os, String browser) throws DatabaseInternalException {
         // TODO:
         return new ImmutablePair<>(1, 2);
     }
@@ -100,13 +100,26 @@ public class DatabaseApi {
      * @param sequence
      * @return null if no ad or ad in the other case
      */
-    public RedirectURL checkIfGotAd(String sequence) {
+    public RedirectURL checkIfGotAd(String sequence) throws DatabaseInternalException {
         // TODO:
         return null;
     }
 
-    public String getOriginalURL(String sequence) {
+    public String getOriginalURL(String sequence) throws DatabaseInternalException {
         // TODO:
         return "www.unizar.es";
+    }
+
+
+    /**
+     * Create a shortened URL and return the sequence related to it
+     * @param headURL
+     * @param interstitialURL
+     * @param secondsToRedirect
+     * @return
+     * @throws DatabaseInternalException
+     */
+    public String createShortURL(String headURL, String interstitialURL, Integer secondsToRedirect) throws DatabaseInternalException {
+        return "dfsds";
     }
 }

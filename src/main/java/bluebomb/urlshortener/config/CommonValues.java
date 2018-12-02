@@ -16,6 +16,11 @@ public class CommonValues {
     public final static String BACK_END_URI = "http://www.localhost:4000/";
 
     /**
+     * Shortened uri prefix
+     */
+    public final static String SHORTENED_URI_PREFIX = "http://www.localhost:3000/short/";
+
+    /**
      * Available stats parameters
      */
     public final static Set<String> AVAILABLE_STATS_PARAMETERS;
