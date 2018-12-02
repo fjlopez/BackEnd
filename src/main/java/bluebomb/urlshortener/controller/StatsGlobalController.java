@@ -15,12 +15,12 @@ import java.util.ArrayList;
 public class StatsGlobalController {
 
     /**
-     * Send stats to all real time global subscribers of sequence and parameter
+     * Send stats to all globalStats subscribers for some sequence and parameter
      *
-     * @param sequence
-     * @param parameter
-     * @param simpMessagingTemplate
-     * @param stats
+     * @param sequence shortened URL sequence code
+     * @param parameter parameter from which statistics will be obtained
+     * @param simpMessagingTemplate SimpMessagingTemplate instance
+     * @param stats stats to send
      */
     public static void sendStatsToGlobalStatsSubscribers(String sequence, String parameter, ArrayList<ClickStat> stats,
                                                          SimpMessagingTemplate simpMessagingTemplate) {
@@ -30,9 +30,9 @@ public class StatsGlobalController {
     /**
      * Subscribe to real time global stats
      *
-     * @param sequence
-     * @param parameter
-     * @return
+     * @param sequence shortened URL sequence code
+     * @param parameter parameter from which statistics will be obtained
+     * @return actual global stats
      */
     @SubscribeMapping("/{sequence}/stats/{parameter}/global")
     public ArrayList<ClickStat> getGlobalStats(@DestinationVariable String sequence, @DestinationVariable String parameter) throws Exception {
@@ -51,8 +51,8 @@ public class StatsGlobalController {
     /**
      * Catch getGetGlobalStats produced Exceptions
      *
-     * @param e
-     * @return
+     * @param e exception captured
+     * @return error message
      */
     @MessageExceptionHandler
     public String errorHandlerGetGlobalStats(Exception e) {

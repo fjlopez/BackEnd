@@ -7,7 +7,6 @@ import bluebomb.urlshortener.errors.ServerInternalError;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
 import bluebomb.urlshortener.exceptions.QrGeneratorBadParametersException;
 import bluebomb.urlshortener.exceptions.QrGeneratorInternalException;
-import bluebomb.urlshortener.model.ShortRequest;
 import bluebomb.urlshortener.model.ShortResponse;
 import bluebomb.urlshortener.model.Size;
 
@@ -23,38 +22,66 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 public class MainController {
+    /**
+     * Create new shortened URL
+     *
+     * @param headURL URL to be shortened
+     * @param interstitialURL Interstitial URL
+     * @param secondsToRedirect Seconds to redirect to complete URL
+     * @return Shortened URL and common related URLs
+     */
     @RequestMapping(value = "/short", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ShortResponse getShortURI(@RequestParam(value = "headURL") String headURL, @RequestParam(value = "interstitialURL", required = false) String interstitialURL, @RequestParam(value = "secondsToRedirect", required = false) Integer secondsToRedirect) {
+        // Original URL is not reachable
+        if (!AvailableURI.getInstance().isURLAvailable(headURL)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not reachable");
+        }
 
-        ArrayList<ShortRequest> example = new ArrayList<ShortRequest>();
-        interstitialURL = interstitialURL.replace(null, "");
+        // Ad URL is not reachable
+        if (interstitialURL != null && !AvailableURI.getInstance().isURLAvailable(interstitialURL)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ad URL is not reachable");
+        }
 
-        ShortRequest shortRequest = new ShortRequest(headURL, interstitialURL, secondsToRedirect);
-        example.add(shortRequest);
+        // Set a value on secondsToRedirect
+        if (interstitialURL == null) secondsToRedirect = null;
+        else if (secondsToRedirect == null) secondsToRedirect = 10;
 
+        String sequence;
+        try {
+            sequence = DatabaseApi.getInstance().createShortURL(headURL, interstitialURL, secondsToRedirect);
+            sequence = CommonValues.SHORTENED_URI_PREFIX + sequence;
+        } catch (DatabaseInternalException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error when creating shortened URL");
+        }
 
-        // TODO: Implement function
-        ShortResponse shortResponse = new ShortResponse("a1b2c3", "...", "...", "...", "...");
-        return shortResponse;
+        AvailableURI.getInstance().registerURL(headURL);
+
+        if (interstitialURL != null) AvailableURI.getInstance().registerURL(interstitialURL);
+
+        return new ShortResponse(CommonValues.SHORTENED_URI_PREFIX + sequence,
+                CommonValues.BACK_END_URI + sequence + "/qr",
+                CommonValues.BACK_END_URI + sequence + "/stats/{parameter}/daily",
+                "ws:" + CommonValues.BACK_END_URI + "ws/" + "ws/" + sequence + "/stats/{parameter}/global",
+                "ws:" + CommonValues.BACK_END_URI + "ws/" + "ws/" + sequence + "/info"
+        );
     }
 
     /**
-     * Generates Qr for especific URL
+     * Generates Qr for specific URL
      *
-     * @param sequence Shortened URL sequence code
-     * @param size Size of returned QR
-     * @param errorCorrection Error correction level (L = ~7% correction, M = ~15% correction, Q = ~25% correction, H = ~30% correction)
-     * @param margin Horizontal and vertical margin of the QR in pixels
-     * @param qrColorIm Color of the QR in hexadecimal
+     * @param sequence          Shortened URL sequence code
+     * @param size              Size of returned QR
+     * @param errorCorrection   Error correction level (L = ~7% correction, M = ~15% correction, Q = ~25% correction, H = ~30% correction)
+     * @param margin            Horizontal and vertical margin of the QR in pixels
+     * @param qrColorIm         Color of the QR in hexadecimal
      * @param backgroundColorIm Color of the background in hexadecimal
-     * @param logo URL of the logo to personalize QR
-     * @param acceptHeader Accepted return types
+     * @param logo              URL of the logo to personalize QR
+     * @param acceptHeader      Accepted return types
      * @return Qr image
      */
     @RequestMapping(value = "/{sequence}/qr", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -70,12 +97,16 @@ public class MainController {
         byte[] response = null;
 
         // Check sequence
-        if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
-            throw new SequenceNotFoundError();
-        } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
-        } else if (!AvailableURI.getInstance().isSequenceAdsAvailable(sequence)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated ad is not available");
+        try {
+            if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
+                throw new SequenceNotFoundError();
+            } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
+            } else if (!AvailableURI.getInstance().isSequenceAdsAvailable(sequence)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated ad is not available");
+            }
+        } catch (DatabaseInternalException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error when trying to check if QR exist");
         }
 
         int qrColor;
@@ -178,6 +209,6 @@ public class MainController {
      * @return Parsed number
      */
     private int parseHexadecimalToInt(String hex) {
-        return (int) Long.parseLong(hex.substring(2),16);
+        return (int) Long.parseLong(hex.substring(2), 16);
     }
 }

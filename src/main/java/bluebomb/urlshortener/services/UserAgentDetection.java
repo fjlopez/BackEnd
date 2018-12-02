@@ -13,17 +13,9 @@ import java.util.stream.Collectors;
  * Detect OS and Browser from an user agent
  */
 public class UserAgentDetection {
-    private static UserAgentDetection ourInstance = new UserAgentDetection();
-
     /**
-     * Get an instance of the class (Singleton pattern)
-     *
-     * @return the instance of the class
+     * Only support static calls
      */
-    public static UserAgentDetection getInstance() {
-        return ourInstance;
-    }
-
     private UserAgentDetection() {
     }
 

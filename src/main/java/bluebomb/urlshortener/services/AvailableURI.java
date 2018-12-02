@@ -60,4 +60,12 @@ public class AvailableURI {
         // will check the available sequence tables created by this process
         return true;
     }
+
+    /**
+     * Register url in the list.
+     * @param url to be registered
+     */
+    public void registerURL(String url){
+
+    }
 }
