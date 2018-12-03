@@ -32,10 +32,14 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter')
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-websocket")
+    
     // https://mvnrepository.com/artifact/postgresql/postgresql
     compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
 
-    // WebSockets Client (eliminar)
+    // https://mvnrepository.com/artifact/eu.bitwalker/UserAgentUtils
+    compile group: 'eu.bitwalker', name: 'UserAgentUtils', version: '1.21'
+
+    // WebSockets Client (delete)
     compile("org.webjars:webjars-locator-core")
     compile("org.webjars:sockjs-client:1.0.2")
     compile("org.webjars:stomp-websocket:2.3.3")
