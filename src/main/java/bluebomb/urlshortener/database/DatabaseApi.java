@@ -105,6 +105,12 @@ public class DatabaseApi {
         return null;
     }
 
+    /**
+     * Get the original url related with sequence if exist, null in other case
+     *
+     * @param sequence
+     * @return
+     */
     public String getOriginalURL(String sequence) throws DatabaseInternalException {
         // TODO:
         return "www.unizar.es";
@@ -113,6 +119,7 @@ public class DatabaseApi {
 
     /**
      * Create a shortened URL and return the sequence related to it
+     *
      * @param headURL
      * @param interstitialURL
      * @param secondsToRedirect
