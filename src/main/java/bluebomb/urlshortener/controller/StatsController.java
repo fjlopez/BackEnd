@@ -66,12 +66,8 @@ public class StatsController {
             // Database not working
         }
         
-        if (response != null) {
-            // QR have been cached
-            return response;
-        }else{
-            return null;
-        }
+        // ADS have been cached
+        return response;
     }
 
     // TODO: IMPLEMENT WITH WEBSOCKETS
