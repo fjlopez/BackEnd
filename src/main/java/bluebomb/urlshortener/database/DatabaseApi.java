@@ -7,6 +7,10 @@ import bluebomb.urlshortener.model.Size;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class DatabaseApi {
@@ -23,11 +27,30 @@ public class DatabaseApi {
      * Return true if sequence exist in DB
      *
      * @param sequence
-     * @return
+     * @return if sequence exists in database
+     * @throws DatabaseInternalException
      */
     public boolean checkIfSequenceExist(String sequence) throws DatabaseInternalException {
-        // TODO:
-        return true;
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM short_sequences WHERE seq = ?";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence); //replace seq = ? -> seq = sequence
+            ResultSet rs = ps.executeQuery(); //Execute query
+            return rs.first(); //Return if result is not empty
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("checkIfSequenceExist failed");
+		} finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
