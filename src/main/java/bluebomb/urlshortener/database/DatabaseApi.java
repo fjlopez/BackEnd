@@ -68,7 +68,7 @@ public class DatabaseApi {
     }
 
     /**
-     * Return ADS code if exist in cache or null
+     * Return ADS sequence if exist in DB or null
      *
      * @param sequence
     */
@@ -76,14 +76,50 @@ public class DatabaseApi {
     
         return null;
     }
+    
     /**
-     * save ADS code in cache 
+     * Return true if ADS html page exist in cache
+     *
+     * @param ads
+     * @return
+     */
+    public boolean checkIfADSExistInCache(String ads) {
+        // TODO:
+        return true;
+    }
+    
+    /**
+     * save ADS html page in cache 
      * 
-     * @param sequence
+     * @param ads
+     * @param adsCode
     */
-    public void saveADSInCache(String sequence,String ads) throws DatabaseInternalException {
+    public void saveADSHTMLInCache(String ads,String adsCode) throws DatabaseInternalException {
+
+
 
     }
+
+    /*
+    *  return ADS html pae if exist in cache or null
+    *
+    * @param ads
+    * @return adsCode
+    */
+
+    public String getADSHTMLfromCache(String ads) throws DatabaseInternalException{
+        String adsCode="<html><body>hola!</body></html>";
+        
+        return adsCode;
+    }
+
+
+
+
+
+
+
+
         /**
      * Return stats code if exist in cache or null
      * @param sequence

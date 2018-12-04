@@ -9,7 +9,7 @@ public class AvailableURI {
         return ourInstance;
     }
 
-    private AvailableURI() {
+    AvailableURI() {
     }
 
     /**
