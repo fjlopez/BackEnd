@@ -135,10 +135,24 @@ public class DatabaseApi {
         return "www.unizar.es";
     }
 
+
+    /**
+     * Create a new Direct shortend URL without intersticialURL
+     * @param headURL
+     * @return
+     * @throws DatabaseInternalException
+     */
     public String createShortURL(String headURL) throws DatabaseInternalException {
         return createShortURL(headURL, "empty", 10);
     }
 
+    /**
+     * Create a shortened URL with default secondsToRedirect (10)
+     * @param headURL
+     * @param interstitialURL
+     * @return
+     * @throws DatabaseInternalException
+     */
     public String createShortURL(String headURL, String interstitialURL) throws DatabaseInternalException {
         return createShortURL(headURL, interstitialURL, 10);
     }
