@@ -102,8 +102,43 @@ public class DatabaseApi {
      * @return
      */
     public ArrayList<ClickStat> getSequenceGlobalStats(String sequence, String parameter) throws DatabaseInternalException {
-        // TODO:
-        return new ArrayList<>();
+        Connection connection = null;
+        ArrayList<ClickStat> retVal = new ArrayList<ClickStat>();
+        String query = "";
+        switch(parameter.toLowerCase()) {
+            case "os":
+                query = "SELECT * FROM get_os_global_stats(?)";
+                break;
+            case "browser":
+                query = "SELECT * FROM get_browser_global_stats(?)";
+                break;
+            default:
+                throw new DatabaseInternalException(parameter + " not supported");
+        }
+
+        try {
+            connection = DBmanager.getConnection();
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+              do {
+                retVal.add(new ClickStat(rs.getString("item"), rs.getInt("number")));
+              } while(rs.next());
+            }
+            return retVal;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getSequenceGlobalStats failed");
+		} finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
