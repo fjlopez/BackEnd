@@ -4,6 +4,8 @@ import bluebomb.urlshortener.exceptions.DatabaseInternalException;
 import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.RedirectURL;
 import bluebomb.urlshortener.model.Size;
+import net.bytebuddy.implementation.bytecode.Throw;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -133,6 +135,13 @@ public class DatabaseApi {
         return "www.unizar.es";
     }
 
+    public String createShortURL(String headURL) throws DatabaseInternalException {
+        return createShortURL(headURL, "empty", 10);
+    }
+
+    public String createShortURL(String headURL, String interstitialURL) throws DatabaseInternalException {
+        return createShortURL(headURL, interstitialURL, 10);
+    }
 
     /**
      * Create a shortened URL and return the sequence related to it
@@ -143,6 +152,35 @@ public class DatabaseApi {
      * @throws DatabaseInternalException
      */
     public String createShortURL(String headURL, String interstitialURL, Integer secondsToRedirect) throws DatabaseInternalException {
-        return "dfsds";
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM new_shortened_url(?,?,?) AS seq";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, headURL); 
+            ps.setString(2, interstitialURL);
+            ps.setInt(3, secondsToRedirect);
+            ResultSet rs = ps.executeQuery(); //Execute query
+            if(rs.first()) {
+                return rs.getString("seq");
+            }       
+            throw new SQLException();    
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                throw new DatabaseInternalException("createShortUrl failed, rolling back");
+            } catch (SQLException e1) {
+                throw new DatabaseInternalException("createShortUrl failed, cannot roll back");
+            }
+		} finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 }
