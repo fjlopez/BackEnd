@@ -1,19 +1,17 @@
 package bluebomb.urlshortener.database;
 
-import bluebomb.urlshortener.exceptions.DatabaseInternalException;
-import bluebomb.urlshortener.model.ClickStat;
-import bluebomb.urlshortener.model.RedirectURL;
-import bluebomb.urlshortener.model.Size;
-import net.bytebuddy.implementation.bytecode.Throw;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import bluebomb.urlshortener.exceptions.DatabaseInternalException;
+import bluebomb.urlshortener.model.ClickStat;
+import bluebomb.urlshortener.model.RedirectURL;
+import bluebomb.urlshortener.model.Size;
 
 public class DatabaseApi {
     private static DatabaseApi ourInstance = new DatabaseApi();
@@ -120,9 +118,47 @@ public class DatabaseApi {
      * @param qrByteArray
      * @throws DatabaseInternalException
      */
-    public void saveQrInCache(String sequence, Size size, String errorCorrection, Integer margin,
+    public Boolean saveQrInCache(String sequence, Size size, String errorCorrection, Integer margin,
                               int qrColor, int backgroundColor, String logo, String responseFormat, byte[] qrByteArray) throws DatabaseInternalException {
-        // TODO:
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM insert_qr(?,?,?,?,?,?,?,?,?,?) AS result";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence); 
+            ps.setInt(2, size.getHeight());
+            ps.setInt(3, size.getWidth());
+            ps.setString(4, errorCorrection);
+            ps.setInt(5, margin);
+            ps.setInt(6, qrColor);
+            ps.setInt(7, backgroundColor);
+            ps.setString(8, logo);
+            ps.setString(9, responseFormat);
+            ps.setBytes(10, qrByteArray);
+
+            ResultSet rs = ps.executeQuery(); //Execute query
+            if(rs.first()) {
+                return rs.getBoolean("result");
+            }
+            return null;      
+            //throw new SQLException();    
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                throw new DatabaseInternalException("saveQrInCache failed, rolling back");
+            } catch (SQLException e1) {
+                throw new DatabaseInternalException("saveQrInCache failed, cannot roll back");
+            }
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
