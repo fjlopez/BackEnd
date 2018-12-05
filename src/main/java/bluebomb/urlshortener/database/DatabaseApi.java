@@ -71,8 +71,39 @@ public class DatabaseApi {
      */
     public byte[] getQrIfExist(String sequence, Size size, String errorCorrection, Integer margin,
                                int qrColor, int backgroundColor, String logo, String responseFormat) throws DatabaseInternalException {
-        // TODO:
-        return null;
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM get_qr( ?, ?, ?, ?, ?, ?, ?, ?, ?) AS qr";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ps.setInt(2, size.getHeight());
+            ps.setInt(3, size.getWidth());
+            ps.setString(4, errorCorrection);
+            ps.setInt(5, margin);
+            ps.setInt(6, qrColor);
+            ps.setInt(7, backgroundColor);
+            ps.setString(8, logo);
+            ps.setString(9, responseFormat);
+            
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+                return rs.getBytes("qr");
+            }
+            return null;
+            //throw new DatabaseInternalException("There is no match with input values");
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getQrIfExist failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -215,8 +246,9 @@ public class DatabaseApi {
             ResultSet rs = ps.executeQuery(); //Execute query
             if(rs.first()) {
                 return rs.getString("seq");
-            }       
-            throw new SQLException();    
+            }
+            return null;      
+            //throw new SQLException();    
         } catch (SQLException e) {
             try {
                 connection.rollback();
