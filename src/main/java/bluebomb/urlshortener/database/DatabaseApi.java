@@ -1,13 +1,17 @@
 package bluebomb.urlshortener.database;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
 import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.RedirectURL;
 import bluebomb.urlshortener.model.Size;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.ArrayList;
 
 public class DatabaseApi {
     private static DatabaseApi ourInstance = new DatabaseApi();
@@ -23,11 +27,30 @@ public class DatabaseApi {
      * Return true if sequence exist in DB
      *
      * @param sequence
-     * @return
+     * @return if sequence exists in database
+     * @throws DatabaseInternalException
      */
     public boolean checkIfSequenceExist(String sequence) throws DatabaseInternalException {
-        // TODO:
-        return true;
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM short_sequences WHERE seq = ?";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence); //replace seq = ? -> seq = sequence
+            ResultSet rs = ps.executeQuery(); //Execute query
+            return rs.first(); //Return if result is not empty
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("checkIfSequenceExist failed");
+		} finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -46,8 +69,39 @@ public class DatabaseApi {
      */
     public byte[] getQrIfExist(String sequence, Size size, String errorCorrection, Integer margin,
                                int qrColor, int backgroundColor, String logo, String responseFormat) throws DatabaseInternalException {
-        // TODO:
-        return null;
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM get_qr( ?, ?, ?, ?, ?, ?, ?, ?, ?) AS qr";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ps.setInt(2, size.getHeight());
+            ps.setInt(3, size.getWidth());
+            ps.setString(4, errorCorrection);
+            ps.setInt(5, margin);
+            ps.setInt(6, qrColor);
+            ps.setInt(7, backgroundColor);
+            ps.setString(8, logo);
+            ps.setString(9, responseFormat);
+            
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+                return rs.getBytes("qr");
+            }
+            return null;
+            //throw new DatabaseInternalException("There is no match with input values");
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getQrIfExist failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -64,9 +118,47 @@ public class DatabaseApi {
      * @param qrByteArray
      * @throws DatabaseInternalException
      */
-    public void saveQrInCache(String sequence, Size size, String errorCorrection, Integer margin,
+    public Boolean saveQrInCache(String sequence, Size size, String errorCorrection, Integer margin,
                               int qrColor, int backgroundColor, String logo, String responseFormat, byte[] qrByteArray) throws DatabaseInternalException {
-        // TODO:
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM insert_qr(?,?,?,?,?,?,?,?,?,?) AS result";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence); 
+            ps.setInt(2, size.getHeight());
+            ps.setInt(3, size.getWidth());
+            ps.setString(4, errorCorrection);
+            ps.setInt(5, margin);
+            ps.setInt(6, qrColor);
+            ps.setInt(7, backgroundColor);
+            ps.setString(8, logo);
+            ps.setString(9, responseFormat);
+            ps.setBytes(10, qrByteArray);
+
+            ResultSet rs = ps.executeQuery(); //Execute query
+            if(rs.first()) {
+                return rs.getBoolean("result");
+            }
+            return null;      
+            //throw new SQLException();    
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                throw new DatabaseInternalException("saveQrInCache failed, rolling back");
+            } catch (SQLException e1) {
+                throw new DatabaseInternalException("saveQrInCache failed, cannot roll back");
+            }
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -77,8 +169,43 @@ public class DatabaseApi {
      * @return
      */
     public ArrayList<ClickStat> getSequenceGlobalStats(String sequence, String parameter) throws DatabaseInternalException {
-        // TODO:
-        return new ArrayList<>();
+        Connection connection = null;
+        ArrayList<ClickStat> retVal = new ArrayList<ClickStat>();
+        String query = "";
+        switch(parameter.toLowerCase()) {
+            case "os":
+                query = "SELECT * FROM get_os_global_stats(?)";
+                break;
+            case "browser":
+                query = "SELECT * FROM get_browser_global_stats(?)";
+                break;
+            default:
+                throw new DatabaseInternalException(parameter + " not supported");
+        }
+
+        try {
+            connection = DBmanager.getConnection();
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+              do {
+                retVal.add(new ClickStat(rs.getString("item"), rs.getInt("number")));
+              } while(rs.next());
+            }
+            return retVal;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getSequenceGlobalStats failed");
+		} finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -118,6 +245,27 @@ public class DatabaseApi {
 
 
     /**
+     * Create a new Direct shortend URL without intersticialURL
+     * @param headURL
+     * @return
+     * @throws DatabaseInternalException
+     */
+    public String createShortURL(String headURL) throws DatabaseInternalException {
+        return createShortURL(headURL, "empty", 10);
+    }
+
+    /**
+     * Create a shortened URL with default secondsToRedirect (10)
+     * @param headURL
+     * @param interstitialURL
+     * @return
+     * @throws DatabaseInternalException
+     */
+    public String createShortURL(String headURL, String interstitialURL) throws DatabaseInternalException {
+        return createShortURL(headURL, interstitialURL, 10);
+    }
+
+    /**
      * Create a shortened URL and return the sequence related to it
      *
      * @param headURL
@@ -127,6 +275,36 @@ public class DatabaseApi {
      * @throws DatabaseInternalException
      */
     public String createShortURL(String headURL, String interstitialURL, Integer secondsToRedirect) throws DatabaseInternalException {
-        return "dfsds";
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM new_shortened_url(?,?,?) AS seq";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, headURL); 
+            ps.setString(2, interstitialURL);
+            ps.setInt(3, secondsToRedirect);
+            ResultSet rs = ps.executeQuery(); //Execute query
+            if(rs.first()) {
+                return rs.getString("seq");
+            }
+            return null;      
+            //throw new SQLException();    
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                throw new DatabaseInternalException("createShortUrl failed, rolling back");
+            } catch (SQLException e1) {
+                throw new DatabaseInternalException("createShortUrl failed, cannot roll back");
+            }
+		} finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 }
