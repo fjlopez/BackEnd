@@ -7,6 +7,7 @@ import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.Stats;
 import bluebomb.urlshortener.model.StatsAgent;
 import bluebomb.urlshortener.services.AvailableURI;
+import bluebomb.urlshortener.services.UserAgentDetection;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -70,20 +71,25 @@ public class StatsController {
         return response;
     }
 
-    // TODO: IMPLEMENT WITH WEBSOCKETS
-    @RequestMapping(value = "/{sequence}/stats/global", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrayList<ClickStat> getGlobalStats(@PathVariable(value = "sequence") String sequence) {
-        ClickStat clickStat = new ClickStat("IE", 500);
-        ArrayList<ClickStat> clickStatArrayList = new ArrayList<>();
-        clickStatArrayList.add(clickStat);
-        return clickStatArrayList;
-    }
-
+    /**
+     * Get supported agents
+     * @param element element to get all supported options
+     * @return supported agents
+     */
     @RequestMapping(value = "/{element}/support", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<StatsAgent> getSupportedAgents(@PathVariable(value = "element") String element) {
-        StatsAgent clickStat = new StatsAgent("IE");
-        ArrayList<StatsAgent> clickStatArrayList = new ArrayList<>();
-        clickStatArrayList.add(clickStat);
-        return clickStatArrayList;
+        ArrayList<StatsAgent> statsAgents;
+        switch (element.toLowerCase()) {
+            case "os":
+                statsAgents = new ArrayList<>(UserAgentDetection.getSupportedOS());
+                break;
+            case "browser":
+                statsAgents = new ArrayList<>(UserAgentDetection.getSupportedBrowsers());
+                break;
+            default:
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The searched parameter is not available");
+
+        }
+        return statsAgents;
     }
 }
