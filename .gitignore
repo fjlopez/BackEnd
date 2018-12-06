@@ -37,3 +37,4 @@ vcs.xml
 
 #metadata
 .metadata/
+src/main/java/bluebomb/urlshortener/database/testBD.java
