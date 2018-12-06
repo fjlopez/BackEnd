@@ -54,6 +54,7 @@ public class AvailableURI {
     private AvailableURI() {
         availableURLCheckerThread = new Thread(this::checkIfURLSAreReachableLoop);
         availableURLCheckerThread.start();
+
     }
 
     /**

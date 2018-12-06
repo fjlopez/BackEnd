@@ -1,17 +1,18 @@
 package bluebomb.urlshortener.database;
 
+import bluebomb.urlshortener.exceptions.DatabaseInternalException;
+import bluebomb.urlshortener.model.ClickStat;
+import bluebomb.urlshortener.model.RedirectURL;
+import bluebomb.urlshortener.model.Size;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import bluebomb.urlshortener.exceptions.DatabaseInternalException;
-import bluebomb.urlshortener.model.ClickStat;
-import bluebomb.urlshortener.model.RedirectURL;
-import bluebomb.urlshortener.model.Size;
+import java.util.Date;
 
 public class DatabaseApi {
     private static DatabaseApi ourInstance = new DatabaseApi();
@@ -306,5 +307,87 @@ public class DatabaseApi {
                 throw new DatabaseInternalException("Cannot close connection");
             }
         }
+    }
+
+    /**
+     * Return ADS sequence if exist in DB or null
+     *
+     * @param sequence
+    */
+    public String getADSIfExist(String sequence) throws DatabaseInternalException {
+    
+        return null;
+    }
+    
+    /**
+     * Return true if ADS html page exist in cache
+     *
+     * @param ads
+     * @return
+     */
+    public boolean checkIfADSExistInCache(String ads) {
+        // TODO:
+        return true;
+    }
+    
+    /**
+     * save ADS html page in cache 
+     * 
+     * @param ads
+     * @param adsCode
+    */
+    public void saveADSHTMLInCache(String ads,String adsCode) throws DatabaseInternalException {
+
+
+
+    }
+
+    /*
+    *  return ADS html pae if exist in cache or null
+    *
+    * @param ads
+    * @return adsCode
+    */
+
+    public String getADSHTMLfromCache(String ads) throws DatabaseInternalException{
+        String adsCode="<html><body>hola!</body></html>";
+        
+        return adsCode;
+    }
+
+
+
+
+
+
+
+
+        /**
+     * Return stats code if exist in cache or null
+     * @param sequence
+     * @param parameter parameters from which statistics will be obtained
+     * @param startDate First day to get stats
+     * @param endDate Last day to get stats
+     * @param sortType Sort type (based on total clicks)
+     * @param maxAmountofDataToRetrive 
+    */
+    public ClickStat getSTATSifExist(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive) 
+                                                                                                                                throws DatabaseInternalException {
+        
+        return null;
+    }
+    /**
+     * save stats code in cache 
+     * 
+     * @param sequence
+     * @param parameter parameters from which statistics will be obtained
+     * @param startDate First day to get stats
+     * @param endDate Last day to get stats
+     * @param sortType Sort type (based on total clicks)
+     * @param maxAmountofDataToRetrive 
+     */
+    public void saveSTATSinCache(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive)
+                                                                                                                                 throws DatabaseInternalException {
+        
     }
 }
