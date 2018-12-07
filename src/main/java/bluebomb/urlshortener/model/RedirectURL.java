@@ -24,5 +24,13 @@ public class RedirectURL {
     public void setInterstitialURL(String interstitialURL) {
         this.interstitialURL = interstitialURL;
     }
+    
+    @Override
+    public String toString() {
+        return "{" +
+            " secondsToRedirect='" + getSecondsToRedirect() + "'" +
+            ", interstitialURL='" + getInterstitialURL() + "'" +
+            "}";
+    }
 }
 
