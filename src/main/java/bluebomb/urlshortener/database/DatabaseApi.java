@@ -126,13 +126,13 @@ public class DatabaseApi {
     /**
      * Update static of some sequence
      *
-     * @param sequence  sequence
-     * @param parameter parameter (available values: os, browser)
-     * @param agent     agent to add
+     * @param sequence sequence
+     * @param os       operating system
+     * @param browser  browser
      * @return (New OS number of clicks, New Browser number of clicks) or null if sequence non exist
      * @throws DatabaseInternalException if database fails doing the operation
      */
-    public ImmutablePair<Integer, Integer> addStats(@NotNull String sequence, @NotNull String parameter, @NotNull String agent)
+    public ImmutablePair<Integer, Integer> addStats(@NotNull String sequence, @NotNull String os, @NotNull String browser)
             throws DatabaseInternalException {
         Connection connection = null;
         try {
