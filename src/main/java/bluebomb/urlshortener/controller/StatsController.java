@@ -3,7 +3,6 @@ package bluebomb.urlshortener.controller;
 import bluebomb.urlshortener.database.DatabaseApi;
 import bluebomb.urlshortener.errors.SequenceNotFoundError;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
-import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.Stats;
 import bluebomb.urlshortener.model.StatsAgent;
 import bluebomb.urlshortener.services.AvailableURI;
@@ -21,58 +20,51 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Date;
 
-    /**
-     *gets the stats of the shortler URL
-     *
-     * @param sequence Shortened URL sequence code
-     * @param parameter parameters from which statistics will be obtained
-     * @param startDate First day to get stats
-     * @param endDate Last day to get stats
-     * @param sortType Sort type (based on total clicks)
-     * @param maxAmountofDataToRetrive 
-     * @return 
-     */
+
 @RestController
 public class StatsController {
+
+    /**
+     * Gets the stats of the shortened URL
+     *
+     * @param sequence                  Shortened URL sequence code
+     * @param parameter                 parameters from which statistics will be obtained
+     * @param startDate                 First day to get stats
+     * @param endDate                   Last day to get stats
+     * @param sortType                  Sort type (based on total clicks)
+     * @param maxAmountOfDataToRetrieve Amount of data to get
+     * @return the stats of the shortened URL associated with sequence
+     */
     @RequestMapping(value = "/{sequence}/stats/daily", produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrayList<Stats> getStatsDaily(@PathVariable(value = "sequence") String sequence,
                                           @RequestParam(value = "parameter") String parameter,
                                           @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                           @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                           @RequestParam(value = "sortType", required = false) String sortType,
-                                          @RequestParam(value = "maxAmountOfDataToRetreive") Integer maxAmountOfDataToRetreive) {
+                                          @RequestParam(value = "maxAmountOfDataToRetrieve") Integer maxAmountOfDataToRetrieve) {
+        // Check sequence
+        try {
+            if (!DatabaseApi.getInstance().containsSequence(sequence)) {
+                throw new SequenceNotFoundError();
+            } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
+            }
+        } catch (DatabaseInternalException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error when trying to check if QR exist");
+        }
 
-                // Check sequence
-                if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
-                    throw new SequenceNotFoundError();
-                } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
-                } else if (!AvailableURI.getInstance().isSequenceAdsAvailable(sequence)) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated ads is not available");
-                }
-                
-        ArrayList<Stats> response = new ArrayList<Stats>();
-        ArrayList<ClickStat> clickStatArrayList = new ArrayList<>();
-                
-                         
-         try {
-             // Get STATS if is in cache
-               ClickStat clickStat = DatabaseApi.getInstance().getSTATSifExist(sequence,parameter,startDate,endDate,sortType,maxAmountOfDataToRetreive);
-             // TODO: Implement function
-               clickStatArrayList.add(clickStat);
-               Stats stats = new Stats(new Date(), clickStatArrayList);
-               response.add(stats);
+        // Get STATS
+        try {
+            return DatabaseApi.getInstance().getDailyStats(sequence, parameter, startDate, endDate, sortType, maxAmountOfDataToRetrieve);
 
         } catch (DatabaseInternalException e) {
-            // Database not working
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error when trying obtain Stats from DB");
         }
-        
-        // ADS have been cached
-        return response;
     }
 
     /**
      * Get supported agents
+     *
      * @param element element to get all supported options
      * @return supported agents
      */

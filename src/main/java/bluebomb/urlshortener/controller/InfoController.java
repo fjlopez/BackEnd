@@ -47,7 +47,7 @@ public class InfoController {
     @SubscribeMapping("/{sequence}/info")
     public Object getShortenedURL(@DestinationVariable String sequence, @Header("simpSessionId") String simpSessionId,
                                   @RequestHeader("User-Agent") String userAgent) throws Exception {
-        if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
+        if (!DatabaseApi.getInstance().containsSequence(sequence)) {
             // Unavailable sequence
             throw new Exception("Error: Unavailable sequence: " + sequence);
         }
@@ -61,7 +61,7 @@ public class InfoController {
         // Update statics
         String browser = UserAgentDetection.detectBrowser(userAgent);
         String os = UserAgentDetection.detectOS(userAgent);
-        ImmutablePair<Integer, Integer> newStatics = DatabaseApi.getInstance().updateSequenceStatics(sequence, os, browser);
+        ImmutablePair<Integer, Integer> newStatics = DatabaseApi.getInstance().addStats(sequence, os, browser);
 
         // Notify new statics to all subscribers
         ArrayList<ClickStat> clickStatOS = new ArrayList<>();
@@ -74,8 +74,8 @@ public class InfoController {
         StatsGlobalController.sendStatsToGlobalStatsSubscribers(sequence, "browser", clickStatBrowser, simpMessagingTemplate);
 
         // If adds send ad and start thread and if not return url
-        RedirectURL ad = DatabaseApi.getInstance().checkIfGotAd(sequence);
-        String originalURL = DatabaseApi.getInstance().getOriginalURL(sequence);
+        RedirectURL ad = DatabaseApi.getInstance().getAd(sequence);
+        String originalURL = DatabaseApi.getInstance().getHeadURL(sequence);
         if (ad == null) {
             return originalURL;
         } else {
