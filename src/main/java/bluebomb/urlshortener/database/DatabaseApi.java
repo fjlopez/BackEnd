@@ -176,8 +176,29 @@ public class DatabaseApi {
      * @return null if no ad or ad in the other case
      */
     public RedirectURL getAd(@NotNull String sequence) throws DatabaseInternalException {
-        // TODO:
-        return null;
+        Connection connection = null;
+        try {
+            connection = DbManager.getConnection();
+            String query = "SELECT * FROM get_ad(?)";
+            PreparedStatement ps =
+                    connection.prepareStatement(query,
+                            ResultSet.TYPE_SCROLL_SENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+                return new RedirectURL(rs.getInt("t_out"), rs.getString("ad"));
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("containsSequence failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -255,7 +276,7 @@ public class DatabaseApi {
      */
     public ArrayList<Stats> getDailyStats(String sequence, String parameter, Date startDate, Date endDate, String sortType,
                                           Integer maxAmountOfDataToRetrieve) throws DatabaseInternalException {
-
+        //TODO:
         return null;
     }
 
