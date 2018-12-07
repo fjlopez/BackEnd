@@ -124,13 +124,16 @@ public class DatabaseApi {
     }
 
     /**
-     * Get ad associated with sequence if exist, null in other case
+     * Update static of some sequence
      *
-     * @param sequence sequence to obtain ad
-     * @return ad associated with sequence if exist, null in other case
+     * @param sequence  sequence
+     * @param parameter parameter (available values: os, browser)
+     * @param agent     agent to add
+     * @return (New OS number of clicks, New Browser number of clicks) or null if sequence non exist
      * @throws DatabaseInternalException if database fails doing the operation
      */
-    public ImmutablePair<Integer, Integer> updateSequenceStatics(String sequence, String os, String browser) throws DatabaseInternalException {
+    public ImmutablePair<Integer, Integer> addStats(@NotNull String sequence, @NotNull String parameter, @NotNull String agent)
+            throws DatabaseInternalException {
         Connection connection = null;
         try {
             connection = DbManager.getConnection();
@@ -187,21 +190,6 @@ public class DatabaseApi {
     public String getHeadURL(@NotNull String sequence) throws DatabaseInternalException {
         // TODO:
         return "www.unizar.es";
-    }
-
-    /**
-     * Update static of some sequence
-     *
-     * @param sequence  sequence
-     * @param parameter parameter (available values: os, browser)
-     * @param agent     agent to add
-     * @return (New OS number of clicks, New Browser number of clicks) or null if sequence non exist
-     * @throws DatabaseInternalException if database fails doing the operation
-     */
-    public ImmutablePair<Integer, Integer> addStats(@NotNull String sequence, @NotNull String parameter, @NotNull String agent)
-            throws DatabaseInternalException {
-        // TODO:
-        return new ImmutablePair<>(1, 2);
     }
 
     /**
