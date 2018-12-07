@@ -156,9 +156,9 @@ public class DatabaseApi {
         } catch (SQLException e) {
             try {
                 connection.rollback();
-                throw new DatabaseInternalException("saveQrInCache failed, rolling back");
+                throw new DatabaseInternalException("addStats failed, rolling back");
             } catch (SQLException e1) {
-                throw new DatabaseInternalException("saveQrInCache failed, cannot roll back");
+                throw new DatabaseInternalException("addStats failed, cannot roll back");
             }
         } finally {
             try {
@@ -191,7 +191,7 @@ public class DatabaseApi {
             }
             return null;
         } catch (SQLException e) {
-            throw new DatabaseInternalException("containsSequence failed");
+            throw new DatabaseInternalException("getAd failed");
         } finally {
             try {
                 connection.close();
@@ -209,8 +209,29 @@ public class DatabaseApi {
      * @throws DatabaseInternalException if database fails doing the operation
      */
     public String getHeadURL(@NotNull String sequence) throws DatabaseInternalException {
-        // TODO:
-        return "www.unizar.es";
+        Connection connection = null;
+        try {
+            connection = DbManager.getConnection();
+            String query = "SELECT * FROM get_head_url(?) AS url";
+            PreparedStatement ps =
+                    connection.prepareStatement(query,
+                            ResultSet.TYPE_SCROLL_SENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+                return rs.getString("url");
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getHeadURL failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
