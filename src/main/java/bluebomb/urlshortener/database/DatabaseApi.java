@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -297,8 +298,60 @@ public class DatabaseApi {
      */
     public ArrayList<Stats> getDailyStats(String sequence, String parameter, Date startDate, Date endDate, String sortType,
                                           Integer maxAmountOfDataToRetrieve) throws DatabaseInternalException {
-        //TODO:
-        return null;
+        Connection connection = null;
+        ArrayList<Stats> retVal = new ArrayList<Stats>();
+        String query = "";
+        switch(parameter.toLowerCase()){
+            case "os":
+                query = "SELECT * FROM get_os_daily_stats(?,?,?) ORDER BY SUM " + sortType + " LIMIT ?";
+                break;
+            case "browser":
+                query = "SELECT * FROM get_browser_daily_stats(?,?,?) ORDER BY SUM " + sortType + " LIMIT ?";
+                break;
+            default:
+                throw new DatabaseInternalException(parameter + " not supported");
+        }
+        try {
+            connection = DbManager.getConnection();
+            PreparedStatement ps =
+                    connection.prepareStatement(query,
+                            ResultSet.TYPE_SCROLL_SENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            System.out.println(startDate);
+            ps.setDate(2, new java.sql.Date(startDate.getYear(), startDate.getMonth(), startDate.getDate()));
+            ps.setDate(3, new java.sql.Date(endDate.getYear(), endDate.getMonth(), endDate.getDate()));
+            ps.setInt(4, maxAmountOfDataToRetrieve);
+            ResultSet rs = ps.executeQuery();
+            Date aux = null;
+            ArrayList<ClickStat> auxStat = null;
+            Boolean first = true;
+            if(rs.first()) {
+                do {
+                    if(rs.getDate("Date").equals(aux)) {
+                        auxStat.add(new ClickStat(rs.getString("item"), rs.getInt("click")));
+                    } else {
+                        if(!first) {
+                            retVal.add(new Stats(aux, auxStat));
+                        }
+                        aux = rs.getDate("Date");
+                        auxStat = new ArrayList<ClickStat>();
+                        auxStat.add(new ClickStat(rs.getString("item"), rs.getInt("click")));
+                        first = false;
+                    }
+                } while (rs.next());
+                retVal.add(new Stats(aux, auxStat));
+                return retVal;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getDailyStats failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
-
 }
