@@ -1,10 +1,10 @@
-package bluebomb.urlshortener.database;
+package bluebomb.urlshortener.config;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DBmanager {
+public class DbManager {
 	
 	private final static String DRIVER_CLASS_NAME = "org.postgresql.Driver";
     private final static String HOST = "localhost";
@@ -21,7 +21,7 @@ public class DBmanager {
 		}	
 	}
 
-	private DBmanager(){
+	private DbManager(){
 	}
 	
 	public final static Connection getConnection()

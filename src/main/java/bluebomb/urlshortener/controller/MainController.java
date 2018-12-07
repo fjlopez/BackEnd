@@ -1,9 +1,11 @@
 package bluebomb.urlshortener.controller;
 
 import bluebomb.urlshortener.config.CommonValues;
+import bluebomb.urlshortener.database.CacheApi;
 import bluebomb.urlshortener.database.DatabaseApi;
 import bluebomb.urlshortener.errors.SequenceNotFoundError;
 import bluebomb.urlshortener.errors.ServerInternalError;
+import bluebomb.urlshortener.exceptions.CacheInternalException;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
 import bluebomb.urlshortener.exceptions.QrGeneratorBadParametersException;
 import bluebomb.urlshortener.exceptions.QrGeneratorInternalException;
@@ -30,13 +32,15 @@ public class MainController {
     /**
      * Create new shortened URL
      *
-     * @param headURL URL to be shortened
-     * @param interstitialURL Interstitial URL
+     * @param headURL           URL to be shortened
+     * @param interstitialURL   Interstitial URL
      * @param secondsToRedirect Seconds to redirect to complete URL
      * @return Shortened URL and common related URLs
      */
     @RequestMapping(value = "/short", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ShortResponse getShortURI(@RequestParam(value = "headURL") String headURL, @RequestParam(value = "interstitialURL", required = false) String interstitialURL, @RequestParam(value = "secondsToRedirect", required = false) Integer secondsToRedirect) {
+    public ShortResponse getShortURI(@RequestParam(value = "headURL") String headURL,
+                                     @RequestParam(value = "interstitialURL", required = false) String interstitialURL,
+                                     @RequestParam(value = "secondsToRedirect", required = false) Integer secondsToRedirect) {
         // Original URL is not reachable
         if (!AvailableURI.getInstance().isURLAvailable(headURL)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not reachable");
@@ -98,7 +102,7 @@ public class MainController {
 
         // Check sequence
         try {
-            if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
+            if (!DatabaseApi.getInstance().containsSequence(sequence)) {
                 throw new SequenceNotFoundError();
             } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
@@ -123,8 +127,8 @@ public class MainController {
 
         // Get QR if is in cache
         try {
-            response = DatabaseApi.getInstance().getQrIfExist(sequence, size, errorCorrection, margin, qrColor, backgroundColor, logo, acceptHeader);
-        } catch (DatabaseInternalException e) {
+            response = CacheApi.getInstance().getQR(sequence, size, errorCorrection, margin, qrColor, backgroundColor, logo, acceptHeader);
+        } catch (CacheInternalException e) {
             // Database not working
         }
 
@@ -187,15 +191,15 @@ public class MainController {
         try {
             response = QRCodeGenerator.generate(CommonValues.FRONT_END_URI + sequence, responseType, size,
                     errorCorrectionLevel, margin, qrColor, backgroundColor, bufferedLogo);
-            DatabaseApi.getInstance().saveQrInCache(sequence, size, errorCorrection, margin,
+            CacheApi.getInstance().addQR(sequence, size, errorCorrection, margin,
                     qrColor, backgroundColor, logo, acceptHeader, response);
         } catch (QrGeneratorBadParametersException e) {
+            // Bad parameters
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (QrGeneratorInternalException e) {
-
             // Something went wrong in QR generation
-            throw new ServerInternalError();
-        } catch (DatabaseInternalException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong in QR generation");
+        } catch (CacheInternalException e) {
             // Database cache not working
         }
 

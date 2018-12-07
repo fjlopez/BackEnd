@@ -35,17 +35,18 @@ public class StatsGlobalController {
      * @return actual global stats
      */
     @SubscribeMapping("/{sequence}/stats/{parameter}/global")
-    public ArrayList<ClickStat> getGlobalStats(@DestinationVariable String sequence, @DestinationVariable String parameter) throws Exception {
+    public ArrayList<ClickStat> getGlobalStats(@DestinationVariable String sequence, @DestinationVariable String parameter)
+            throws Exception {
         if (!CommonValues.AVAILABLE_STATS_PARAMETERS.contains(parameter)) {
             // Unavailable parameter
             throw new Exception("Error: Unavailable parameter: " + parameter);
         }
 
-        if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
+        if (!DatabaseApi.getInstance().containsSequence(sequence)) {
             // Unavailable sequence
             throw new Exception("Error: Unavailable sequence: " + sequence);
         }
-        return DatabaseApi.getInstance().getSequenceGlobalStats(sequence, parameter);
+        return DatabaseApi.getInstance().getGlobalStats(sequence, parameter);
     }
 
     /**

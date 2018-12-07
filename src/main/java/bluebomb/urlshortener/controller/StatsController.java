@@ -44,7 +44,7 @@ public class StatsController {
                                           @RequestParam(value = "maxAmountOfDataToRetrieve") Integer maxAmountOfDataToRetrieve) {
         // Check sequence
         try {
-            if (!DatabaseApi.getInstance().checkIfSequenceExist(sequence)) {
+            if (!DatabaseApi.getInstance().containsSequence(sequence)) {
                 throw new SequenceNotFoundError();
             } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
@@ -55,7 +55,7 @@ public class StatsController {
 
         // Get STATS
         try {
-            return DatabaseApi.getInstance().getSTATSifExist(sequence, parameter, startDate, endDate, sortType, maxAmountOfDataToRetrieve);
+            return DatabaseApi.getInstance().getDailyStats(sequence, parameter, startDate, endDate, sortType, maxAmountOfDataToRetrieve);
 
         } catch (DatabaseInternalException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error when trying obtain Stats from DB");
