@@ -32,5 +32,13 @@ public class Stats {
     public void setClickStat(ArrayList<ClickStat> clickStat) {
         this.clickStat = clickStat;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+            " day='" + getDay() + "'" +
+            ", clickStat='" + getClickStat() + "'" +
+            "}\n";
+    }
 }
 
