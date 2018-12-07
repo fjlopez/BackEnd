@@ -218,8 +218,39 @@ public class DatabaseApi {
      * @return (New OS number of clicks, New Browser number of clicks)
      */
     public ImmutablePair<Integer, Integer> updateSequenceStatics(String sequence, String os, String browser) throws DatabaseInternalException {
-        // TODO:
-        return new ImmutablePair<>(1, 2);
+        Connection connection = null;
+        try {
+            connection = DBmanager.getConnection();
+            String query = "SELECT * FROM insert_stat(?,?,?)";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence); 
+            ps.setString(2, browser.toLowerCase());
+            ps.setString(3, os.toLowerCase());
+
+            ResultSet rs = ps.executeQuery(); //Execute query
+            if(rs.first()) {
+                return new ImmutablePair<Integer,Integer>(rs.getInt("os"), 
+                                                        rs.getInt("browser"));
+            }
+            return null;      
+            //throw new SQLException();    
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                throw new DatabaseInternalException("saveQrInCache failed, rolling back");
+            } catch (SQLException e1) {
+                throw new DatabaseInternalException("saveQrInCache failed, cannot roll back");
+            }
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -351,18 +382,12 @@ public class DatabaseApi {
 
     public String getADSHTMLfromCache(String ads) throws DatabaseInternalException{
         String adsCode="<html><body>hola!</body></html>";
-        
+        // TODO
         return adsCode;
     }
 
 
-
-
-
-
-
-
-        /**
+    /**
      * Return stats code if exist in cache or null
      * @param sequence
      * @param parameter parameters from which statistics will be obtained
@@ -371,9 +396,9 @@ public class DatabaseApi {
      * @param sortType Sort type (based on total clicks)
      * @param maxAmountofDataToRetrive 
     */
-    public ClickStat getSTATSifExist(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive) 
-                                                                                                                                throws DatabaseInternalException {
-        
+    public ClickStat getSTATSifExist(String sequence,String parameter,Date startDate,Date endDate,
+                                    String sortType,Integer maxAmountOfDataToRetreive) throws DatabaseInternalException {
+        // TODO:
         return null;
     }
     /**
@@ -386,8 +411,8 @@ public class DatabaseApi {
      * @param sortType Sort type (based on total clicks)
      * @param maxAmountofDataToRetrive 
      */
-    public void saveSTATSinCache(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive)
-                                                                                                                                 throws DatabaseInternalException {
-        
+    public void saveSTATSinCache(String sequence,String parameter,Date startDate,Date endDate,
+                                String sortType,Integer maxAmountOfDataToRetreive) throws DatabaseInternalException {
+        // TODO:
     }
 }
