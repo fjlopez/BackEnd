@@ -5,6 +5,7 @@ import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.RedirectURL;
 import bluebomb.urlshortener.model.Size;
 
+import bluebomb.urlshortener.model.Stats;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.sql.Connection;
@@ -371,7 +372,7 @@ public class DatabaseApi {
      * @param sortType Sort type (based on total clicks)
      * @param maxAmountofDataToRetrive 
     */
-    public ClickStat getSTATSifExist(String sequence,String parameter,Date startDate,Date endDate,String sortType,Integer maxAmountOfDataToRetreive) 
+    public ArrayList<Stats> getSTATSifExist(String sequence, String parameter, Date startDate, Date endDate, String sortType, Integer maxAmountOfDataToRetreive)
                                                                                                                                 throws DatabaseInternalException {
         
         return null;
