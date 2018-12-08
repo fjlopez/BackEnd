@@ -13,7 +13,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -295,7 +294,7 @@ public class DatabaseApi {
      * @param maxAmountOfDataToRetrieve max amount of data to retrieve
      * @return stats associated with sequence filter by parameter or null if sequence non exist
      * @throws DatabaseInternalException if database fails doing the operation
-     */
+     */ 
     public ArrayList<Stats> getDailyStats(String sequence, String parameter, Date startDate, Date endDate, String sortType,
                                           Integer maxAmountOfDataToRetrieve) throws DatabaseInternalException {
         Connection connection = null;
@@ -319,8 +318,8 @@ public class DatabaseApi {
                             ResultSet.CONCUR_UPDATABLE);
             ps.setString(1, sequence);
             System.out.println(startDate);
-            ps.setDate(2, new java.sql.Date(startDate.getYear(), startDate.getMonth(), startDate.getDate()));
-            ps.setDate(3, new java.sql.Date(endDate.getYear(), endDate.getMonth(), endDate.getDate()));
+            ps.setDate(2, new java.sql.Date(startDate.getTime()));
+            ps.setDate(3, new java.sql.Date(endDate.getTime()));
             ps.setInt(4, maxAmountOfDataToRetrieve);
             ResultSet rs = ps.executeQuery();
             Date aux = null;
