@@ -3,6 +3,7 @@ package bluebomb.urlshortener.controller;
 import bluebomb.urlshortener.database.DatabaseApi;
 import bluebomb.urlshortener.model.ClickStat;
 import bluebomb.urlshortener.model.RedirectURL;
+import bluebomb.urlshortener.model.ShortenedInfo;
 import bluebomb.urlshortener.model.URL;
 import bluebomb.urlshortener.services.AvailableURI;
 import bluebomb.urlshortener.services.UserAgentDetection;
@@ -26,27 +27,32 @@ public class InfoController {
     /**
      * Send original url to subscriber
      *
-     * @param sequence sequence that user request for
-     * @param originalURL original url associated with sequence
-     * @param username session if of the user that should receive the original url
+     * @param sequence              sequence that user request for
+     * @param originalURL           original url associated with sequence
+     * @param username              session if of the user that should receive the original url
      * @param simpMessagingTemplate a SimpMessagingTemplate instance to perform the call
      */
     public static void sendOriginalUrlToSubscriber(String sequence, URL originalURL, String username,
                                                    SimpMessagingTemplate simpMessagingTemplate) {
-        simpMessagingTemplate.convertAndSendToUser(username, "/ws/" + sequence + "/info", originalURL);
+        simpMessagingTemplate.convertAndSendToUser(username, "/ws/" + sequence + "/info", new ShortenedInfo(originalURL.getURL(), "", 0));
     }
 
     /**
      * Redirection function to get original URL and statics
      *
-     * @param sequence shortened URL sequence code
+     * @param sequence      shortened URL sequence code
      * @param simpSessionId session id
-     * @param userAgent user agent
+     * @param userAgent     user agent
      * @return original URL if no ad and add URL and the time to wait in the other case
      */
     @SubscribeMapping("/{sequence}/info")
-    public Object getShortenedURL(@DestinationVariable String sequence, @Header("simpSessionId") String simpSessionId,
-                                  @RequestHeader("User-Agent") String userAgent) throws Exception {
+    public ShortenedInfo getShortenedURLInfo(@DestinationVariable String sequence, @Header("simpSessionId") String simpSessionId) throws Exception {
+        /**
+         * ,
+         *                                          @RequestHeader(value = "User-Agent", required = false, defaultValue = "Firefox") String userAgent
+         */
+
+        String userAgent = "prueba";
         if (!DatabaseApi.getInstance().containsSequence(sequence)) {
             // Unavailable sequence
             throw new Exception("Error: Unavailable sequence: " + sequence);
@@ -77,7 +83,8 @@ public class InfoController {
         RedirectURL ad = DatabaseApi.getInstance().getAd(sequence);
         String originalURL = DatabaseApi.getInstance().getHeadURL(sequence);
         if (ad == null) {
-            return originalURL;
+            System.out.println("devuelto");
+            return new ShortenedInfo(originalURL, "", 0);
         } else {
             new Thread(() -> {
                 // Start a thread that notify user when ad time has end
@@ -88,7 +95,7 @@ public class InfoController {
                 }
                 InfoController.sendOriginalUrlToSubscriber(sequence, new URL(originalURL), simpSessionId, simpMessagingTemplate);
             }).start();
-            return ad;
+            return new ShortenedInfo("", ad.getInterstitialURL(), ad.getSecondsToRedirect());
         }
     }
 }
