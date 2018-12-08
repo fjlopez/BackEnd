@@ -2,8 +2,9 @@ package bluebomb.urlshortener;
 
 import bluebomb.urlshortener.exceptions.DownloadHTMLInternalException;
 import bluebomb.urlshortener.services.DownloadHTML;
-import org.junit.Ignore;
+
 import org.junit.Test;
+
 
 public class SimpleTest {
     @Test
@@ -23,4 +24,5 @@ public class SimpleTest {
             assert false;
         }
     }
+
 }

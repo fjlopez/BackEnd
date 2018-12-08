@@ -124,15 +124,81 @@ public class DatabaseApi {
     }
 
     /**
-     * Get ad associated with sequence if exist, null in other case
+     * Update static of some sequence
      *
-     * @param sequence sequence to obtain ad
-     * @return ad associated with sequence if exist, null in other case
+     * @param sequence sequence
+     * @param os       operating system
+     * @param browser  browser
+     * @return (New OS number of clicks, New Browser number of clicks) or null if sequence non exist
      * @throws DatabaseInternalException if database fails doing the operation
      */
+    public ImmutablePair<Integer, Integer> addStats(@NotNull String sequence, @NotNull String os, @NotNull String browser)
+            throws DatabaseInternalException {
+        Connection connection = null;
+        try {
+            connection = DbManager.getConnection();
+            String query = "SELECT * FROM insert_stat(?,?,?)";
+            PreparedStatement ps = 
+                connection.prepareStatement(query, 
+                                            ResultSet.TYPE_SCROLL_SENSITIVE, 
+                                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence); 
+            ps.setString(2, browser.toLowerCase());
+            ps.setString(3, os.toLowerCase());
+
+            ResultSet rs = ps.executeQuery(); //Execute query
+            if(rs.first()) {
+                return new ImmutablePair<Integer,Integer>(rs.getInt("os"), 
+                                                        rs.getInt("browser"));
+            }
+            return null;      
+            //throw new SQLException();    
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                throw new DatabaseInternalException("addStats failed, rolling back");
+            } catch (SQLException e1) {
+                throw new DatabaseInternalException("addStats failed, cannot roll back");
+            }
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
+    }
+
+    /**
+     * Check if the sequence got add
+     *
+     * @param sequence
+     * @return null if no ad or ad in the other case
+     */
     public RedirectURL getAd(@NotNull String sequence) throws DatabaseInternalException {
-        // TODO:
-        return null;
+        Connection connection = null;
+        try {
+            connection = DbManager.getConnection();
+            String query = "SELECT * FROM get_ad(?)";
+            PreparedStatement ps =
+                    connection.prepareStatement(query,
+                            ResultSet.TYPE_SCROLL_SENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+                return new RedirectURL(rs.getInt("t_out"), rs.getString("ad"));
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getAd failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -143,23 +209,29 @@ public class DatabaseApi {
      * @throws DatabaseInternalException if database fails doing the operation
      */
     public String getHeadURL(@NotNull String sequence) throws DatabaseInternalException {
-        // TODO:
-        return "www.unizar.es";
-    }
-
-    /**
-     * Update static of some sequence
-     *
-     * @param sequence  sequence
-     * @param parameter parameter (available values: os, browser)
-     * @param agent     agent to add
-     * @return (New OS number of clicks, New Browser number of clicks) or null if sequence non exist
-     * @throws DatabaseInternalException if database fails doing the operation
-     */
-    public ImmutablePair<Integer, Integer> addStats(@NotNull String sequence, @NotNull String parameter, @NotNull String agent)
-            throws DatabaseInternalException {
-        // TODO:
-        return new ImmutablePair<>(1, 2);
+        Connection connection = null;
+        try {
+            connection = DbManager.getConnection();
+            String query = "SELECT * FROM get_head_url(?) AS url";
+            PreparedStatement ps =
+                    connection.prepareStatement(query,
+                            ResultSet.TYPE_SCROLL_SENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            ResultSet rs = ps.executeQuery();
+            if(rs.first()) {
+                return rs.getString("url");
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getHeadURL failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
 
     /**
@@ -222,11 +294,63 @@ public class DatabaseApi {
      * @param maxAmountOfDataToRetrieve max amount of data to retrieve
      * @return stats associated with sequence filter by parameter or null if sequence non exist
      * @throws DatabaseInternalException if database fails doing the operation
-     */
+     */ 
     public ArrayList<Stats> getDailyStats(String sequence, String parameter, Date startDate, Date endDate, String sortType,
                                           Integer maxAmountOfDataToRetrieve) throws DatabaseInternalException {
-
-        return null;
+        Connection connection = null;
+        ArrayList<Stats> retVal = new ArrayList<Stats>();
+        String query = "";
+        switch(parameter.toLowerCase()){
+            case "os":
+                query = "SELECT * FROM get_os_daily_stats(?,?,?) ORDER BY SUM " + sortType + " LIMIT ?";
+                break;
+            case "browser":
+                query = "SELECT * FROM get_browser_daily_stats(?,?,?) ORDER BY SUM " + sortType + " LIMIT ?";
+                break;
+            default:
+                throw new DatabaseInternalException(parameter + " not supported");
+        }
+        try {
+            connection = DbManager.getConnection();
+            PreparedStatement ps =
+                    connection.prepareStatement(query,
+                            ResultSet.TYPE_SCROLL_SENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+            ps.setString(1, sequence);
+            System.out.println(startDate);
+            ps.setDate(2, new java.sql.Date(startDate.getTime()));
+            ps.setDate(3, new java.sql.Date(endDate.getTime()));
+            ps.setInt(4, maxAmountOfDataToRetrieve);
+            ResultSet rs = ps.executeQuery();
+            Date aux = null;
+            ArrayList<ClickStat> auxStat = null;
+            Boolean first = true;
+            if(rs.first()) {
+                do {
+                    if(rs.getDate("Date").equals(aux)) {
+                        auxStat.add(new ClickStat(rs.getString("item"), rs.getInt("click")));
+                    } else {
+                        if(!first) {
+                            retVal.add(new Stats(aux, auxStat));
+                        }
+                        aux = rs.getDate("Date");
+                        auxStat = new ArrayList<ClickStat>();
+                        auxStat.add(new ClickStat(rs.getString("item"), rs.getInt("click")));
+                        first = false;
+                    }
+                } while (rs.next());
+                retVal.add(new Stats(aux, auxStat));
+                return retVal;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseInternalException("getDailyStats failed");
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new DatabaseInternalException("Cannot close connection");
+            }
+        }
     }
-
 }

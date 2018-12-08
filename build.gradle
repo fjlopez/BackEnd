@@ -29,14 +29,15 @@ repositories {
 
 
 dependencies {
+    // Spring
     implementation('org.springframework.boot:spring-boot-starter')
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-websocket")
     
-    // https://mvnrepository.com/artifact/postgresql/postgresql
+    // Database
     compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1100-jdbc4'
 
-    // https://mvnrepository.com/artifact/eu.bitwalker/UserAgentUtils
+    // User agent detection
     compile group: 'eu.bitwalker', name: 'UserAgentUtils', version: '1.21'
 
     // WebSockets Client (delete)
@@ -49,6 +50,9 @@ dependencies {
     // QR generator
     compile "com.google.zxing:core:3.3.0"
     compile 'com.google.zxing:javase:3.3.0'
+
+    // Download HTML
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
     
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
