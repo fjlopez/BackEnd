@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Add endpoint and disable CORS
-        registry.addEndpoint("/ws").setAllowedOrigins("*");
-        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/ws").addInterceptors(new WebSocketHandshakeInterceptor()).setAllowedOrigins("*");
+        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS().setInterceptors(new WebSocketHandshakeInterceptor());
     }
 }
