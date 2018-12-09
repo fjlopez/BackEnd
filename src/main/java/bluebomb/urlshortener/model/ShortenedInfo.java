@@ -5,7 +5,7 @@ public class ShortenedInfo {
     private String interstitialURL;
     private Integer secondsToRedirect;
 
-    public ShortenedInfo(){
+    public ShortenedInfo() {
 
     }
 
@@ -19,16 +19,24 @@ public class ShortenedInfo {
         return HeadURL;
     }
 
-
     public String getinterstitialURL() {
         return interstitialURL;
     }
 
+    public void setHeadURL(String headURL) {
+        HeadURL = headURL;
+    }
 
+    public void setInterstitialURL(String interstitialURL) {
+        this.interstitialURL = interstitialURL;
+    }
+
+    public void setSecondsToRedirect(Integer secondsToRedirect) {
+        this.secondsToRedirect = secondsToRedirect;
+    }
 
     public Integer getsecondsToRedirect() {
         return secondsToRedirect;
     }
-
 
 }

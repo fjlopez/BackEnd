@@ -1,4 +1,4 @@
-package bluebomb.urlshortener;
+package bluebomb.urlshortener.controller;
 
 import bluebomb.urlshortener.database.DatabaseApi;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
