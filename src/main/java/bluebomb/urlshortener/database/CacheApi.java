@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+// https://windoctor7.github.io/spring-jdbc.html o similar para simplicar la gestión de la base de datos
+
 public class CacheApi {
     private static CacheApi ourInstance = new CacheApi();
 

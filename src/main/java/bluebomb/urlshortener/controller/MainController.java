@@ -4,17 +4,16 @@ import bluebomb.urlshortener.config.CommonValues;
 import bluebomb.urlshortener.database.CacheApi;
 import bluebomb.urlshortener.database.DatabaseApi;
 import bluebomb.urlshortener.errors.SequenceNotFoundError;
-import bluebomb.urlshortener.errors.ServerInternalError;
 import bluebomb.urlshortener.exceptions.CacheInternalException;
 import bluebomb.urlshortener.exceptions.DatabaseInternalException;
 import bluebomb.urlshortener.exceptions.QrGeneratorBadParametersException;
 import bluebomb.urlshortener.exceptions.QrGeneratorInternalException;
 import bluebomb.urlshortener.model.ShortResponse;
 import bluebomb.urlshortener.model.Size;
-
 import bluebomb.urlshortener.qr.QRCodeGenerator;
 import bluebomb.urlshortener.services.AvailableURI;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +28,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 public class MainController {
+
+    @Value("${app.front-end-uri:http://www.localhost:3000/}")
+    private String frontEndURI;
+
+
     /**
      * Create new shortened URL
      *
@@ -189,7 +193,7 @@ public class MainController {
         }
 
         try {
-            response = QRCodeGenerator.generate(CommonValues.FRONT_END_URI + sequence, responseType, size,
+            response = QRCodeGenerator.generate(frontEndURI + sequence, responseType, size,
                     errorCorrectionLevel, margin, qrColor, backgroundColor, bufferedLogo);
             CacheApi.getInstance().addQR(sequence, size, errorCorrection, margin,
                     qrColor, backgroundColor, logo, acceptHeader, response);

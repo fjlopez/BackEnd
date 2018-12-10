@@ -5,9 +5,10 @@ import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Detect OS and Browser from an user agent
@@ -47,7 +48,10 @@ public class UserAgentDetection {
      * @return supported operating systems
      */
     public static List<StatsAgent> getSupportedOS() {
-        return Arrays.stream(OperatingSystem.values()).map(op -> new StatsAgent(op.getName())).collect(Collectors.toList());
+        return stream(OperatingSystem.values())
+                .map(OperatingSystem::getName)
+                .map(StatsAgent::new)
+                .collect(toList());
     }
 
     /**
@@ -56,6 +60,8 @@ public class UserAgentDetection {
      * @return supported browsers
      */
     public static List<StatsAgent> getSupportedBrowsers() {
-        return Arrays.stream(Browser.values()).map(op -> new StatsAgent(op.getName())).collect(Collectors.toList());
+        return stream(Browser.values())
+                .map(op -> new StatsAgent(op.getName()))
+                .collect(toList());
     }
 }

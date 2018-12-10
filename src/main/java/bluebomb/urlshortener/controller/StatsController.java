@@ -11,10 +11,7 @@ import bluebomb.urlshortener.services.UserAgentDetection;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -41,26 +38,23 @@ public class StatsController {
                                           @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                           @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                           @RequestParam(value = "sortType", required = false) String sortType,
-                                          @RequestParam(value = "maxAmountOfDataToRetrieve") Integer maxAmountOfDataToRetrieve) {
-        // Check sequence
-        try {
-            if (!DatabaseApi.getInstance().containsSequence(sequence)) {
-                throw new SequenceNotFoundError();
-            } else if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
-            }
-        } catch (DatabaseInternalException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error when trying to check if QR exist");
-        }
 
+
+
+                                          @RequestParam(value = "maxAmountOfDataToRetrieve") Integer maxAmountOfDataToRetrieve) throws DatabaseInternalException {
+        if (!DatabaseApi.getInstance().containsSequence(sequence)) {
+            throw new SequenceNotFoundError();
+        }
+        if (!AvailableURI.getInstance().isSequenceAvailable(sequence)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original URL is not available");
+        }
         // Get STATS
-        try {
-            return DatabaseApi.getInstance().getDailyStats(sequence, parameter, startDate, endDate, sortType, maxAmountOfDataToRetrieve);
-
-        } catch (DatabaseInternalException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error when trying obtain Stats from DB");
-        }
+        return DatabaseApi.getInstance().getDailyStats(sequence, parameter, startDate, endDate, sortType, maxAmountOfDataToRetrieve);
     }
+
+    // @ExceptionHandler(DatabaseInternalException.class)
+    // @ResponseStatus(HttpStatus.NOT_FOUND)
+    // use https://www.javadevjournal.com/spring/exception-handling-for-rest-with-spring/
 
     /**
      * Get supported agents

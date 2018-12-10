@@ -18,7 +18,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class QRCodeGenerator {
@@ -71,47 +71,17 @@ public class QRCodeGenerator {
         }
 
         // Add options
-        Map<EncodeHintType, Object> hints = new HashMap<>();
+        Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
         hints.put(EncodeHintType.ERROR_CORRECTION, errorCorrectionLevel);
         hints.put(EncodeHintType.MARGIN, margin);
 
         // Generate QR Matrix
         BufferedImage qrImage;
-        try {
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix;
-            bitMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, size.getWidth(), size.getHeight(), hints);
-            qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix,
-                    new MatrixToImageConfig(qrColor, backgroundColor));
-
-        } catch (WriterException e) {
-            throw new QrGeneratorInternalException("Qr encoding fails");
-        }
+        qrImage = getBufferedImage(url, size, qrColor, backgroundColor, hints);
 
         // Combine QR Matrix and logo
         if (logo != null) {
-            // Logo must be rescaled
-            int logoFinalHeight = (size.getHeight() - margin) / 8;
-            int logoFinalWidth = (size.getWidth() - margin) / 8;
-
-            Image tmpLogo = logo.getScaledInstance(logoFinalWidth, logoFinalHeight, Image.SCALE_SMOOTH);
-            BufferedImage rescaledLogo = new BufferedImage(logoFinalWidth, logoFinalHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2dRescaledLogo = rescaledLogo.createGraphics();
-            g2dRescaledLogo.drawImage(tmpLogo, 0, 0, null);
-            g2dRescaledLogo.dispose();
-
-            // Combine images
-            BufferedImage combinedImage = new BufferedImage(qrImage.getHeight(), qrImage.getWidth(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2gCombinedImage = (Graphics2D) combinedImage.getGraphics();
-
-            g2gCombinedImage.drawImage(qrImage, 0, 0, null);
-            g2gCombinedImage.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-
-            // Write logo centred
-            g2gCombinedImage.drawImage(rescaledLogo, margin + (size.getWidth() - logoFinalWidth) / 2, margin + (size.getHeight() - logoFinalHeight) / 2, null);
-
-            // qrImage now will point to the combined image
-            qrImage = combinedImage;
+            qrImage = addLogo(size, margin, logo, qrImage);
         }
 
         // Write to byte stream
@@ -123,5 +93,46 @@ public class QRCodeGenerator {
         }
 
         return pngOutputStream.toByteArray();
+    }
+
+    private static BufferedImage addLogo(@NonNull Size size, @NonNull Integer margin, BufferedImage logo, BufferedImage qrImage) {
+        // Logo must be rescaled
+        int logoFinalHeight = (size.getHeight() - margin) / 8;
+        int logoFinalWidth = (size.getWidth() - margin) / 8;
+
+        Image tmpLogo = logo.getScaledInstance(logoFinalWidth, logoFinalHeight, Image.SCALE_SMOOTH);
+        BufferedImage rescaledLogo = new BufferedImage(logoFinalWidth, logoFinalHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2dRescaledLogo = rescaledLogo.createGraphics();
+        g2dRescaledLogo.drawImage(tmpLogo, 0, 0, null);
+        g2dRescaledLogo.dispose();
+
+        // Combine images
+        BufferedImage combinedImage = new BufferedImage(qrImage.getHeight(), qrImage.getWidth(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2gCombinedImage = (Graphics2D) combinedImage.getGraphics();
+
+        g2gCombinedImage.drawImage(qrImage, 0, 0, null);
+        g2gCombinedImage.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
+        // Write logo centred
+        g2gCombinedImage.drawImage(rescaledLogo, margin + (size.getWidth() - logoFinalWidth) / 2, margin + (size.getHeight() - logoFinalHeight) / 2, null);
+
+        // qrImage now will point to the combined image
+        qrImage = combinedImage;
+        return qrImage;
+    }
+
+    private static BufferedImage getBufferedImage(@NonNull String url, @NonNull Size size, @NonNull int qrColor, @NonNull int backgroundColor, Map<EncodeHintType, Object> hints) throws QrGeneratorInternalException {
+        BufferedImage qrImage;
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix;
+            bitMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, size.getWidth(), size.getHeight(), hints);
+            qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix,
+                    new MatrixToImageConfig(qrColor, backgroundColor));
+
+        } catch (WriterException e) {
+            throw new QrGeneratorInternalException("Qr encoding fails");
+        }
+        return qrImage;
     }
 }
